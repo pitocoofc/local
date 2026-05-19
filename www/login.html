@@ -13,7 +13,7 @@
             user-select: none;
         }
 
-        .screen { display: none; flex-direction: column; align-items: center; width: 90%; max-width: 400px; }
+        .screen { display: none; flex-direction: column; align-items: center; width: 90%; max-width: 400px; text-align: center; }
         .active { display: flex; }
 
         /* Spinner de Processamento */
@@ -38,35 +38,122 @@
             color: #fff; padding: 10px; font-size: 18px; text-align: center;
             outline: none; width: 100%; margin-top: 20px;
         }
+        input.error { border-bottom: 2px solid #ff3b30; animation: shake 0.3s; }
+        input:disabled { border-bottom-color: #333 !important; color: #555; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
 
         /* Barras de Progresso */
         .progress-bar { width: 100%; height: 2px; background: #222; margin-top: 20px; overflow: hidden; }
         .fill { height: 100%; background: #3b82f6; width: 0%; transition: width 0.1s; }
 
-        /* BOTÃO DE CACHE (Seletor de Kernel) */
-        #cacheBtn {
-            position: fixed; top: 10px; right: 10px;
-            background: #00c853; border: none; color: #000;
-            font-size: 10px; padding: 6px 12px; border-radius: 4px;
-            cursor: pointer; font-weight: bold; z-index: 1000;
-            letter-spacing: 1px;
+        /* Menu de Opções Básicas */
+        .menu-btn {
+            background: #111; border: 1px solid #333; color: #fff;
+            padding: 12px; width: 100%; margin-top: 10px; font-family: monospace;
+            cursor: pointer; text-align: left; font-size: 14px; transition: 0.2s;
         }
-        #cacheBtn:active { transform: scale(0.95); background: #00e676; }
+        .menu-btn:hover:not(:disabled) { background: #1d4ed8; border-color: #3b82f6; }
+        .menu-btn.danger:hover:not(:disabled) { background: #b91c1c; border-color: #ef4444; }
+        .menu-btn:disabled { color: #444; border-color: #222; background: #0a0a0a; cursor: not-allowed; }
+
+        /* Estilização do Quiz de Datas */
+        .date-option {
+            background: #111; border: 1px solid #3b82f6; color: #fff;
+            padding: 10px; width: 100%; margin-top: 8px; font-family: monospace;
+            cursor: pointer; font-size: 13px; text-align: center;
+        }
+        .date-option:hover { background: #222; }
+
+        /* Elementos de Escolha de Tipo de Senha e Quadro de Desenho */
+        .auth-modes { display: flex; gap: 5px; width: 100%; margin-top: 15px; }
+        .mode-btn {
+            flex: 1; background: #111; border: 1px solid #222; color: #888;
+            padding: 8px 4px; font-family: monospace; cursor: pointer; font-size: 10px;
+            white-space: nowrap;
+        }
+        .mode-btn.selected { border-color: #3b82f6; color: #fff; background: #0d1e3d; }
+        .mode-btn:disabled { color: #333; border-color: #111; background: #050505; }
+        
+        .pad-container { display: none; flex-direction: column; align-items: center; width: 100%; margin-top: 15px; }
+        .pad-container.visible { display: flex; }
+        
+        canvas { background: #0a0a0a; border: 1px dashed #333; cursor: crosshair; touch-action: none; }
+        .clear-pad-btn {
+            background: none; border: none; color: #666; font-size: 10px;
+            margin-top: 5px; cursor: pointer; text-decoration: underline;
+        }
     </style>
 </head>
 <body>
 
-    <button id="cacheBtn">CHECK CACHE</button>
-
+    <!-- FASE 1: Carregamento Inicial -->
     <div id="phase1" class="screen active">
         <div style="font-size: 24px; letter-spacing: 5px; margin-bottom: 20px;">GHOST_OS</div>
         <div class="progress-bar"><div id="fill1" class="fill"></div></div>
     </div>
 
+    <!-- TELA MENU -->
+    <div id="os-menu" class="screen">
+        <div style="font-size: 18px; color: #3b82f6; margin-bottom: 20px; letter-spacing: 2px;">SISTEMA ENCONTRADO</div>
+        <button class="menu-btn" onclick="openLogin()">[ 1 ] ACESSAR TERMINAL</button>
+        <button class="menu-btn" onclick="openRecovery()">[ 2 ] RECUPERAÇÃO FORENSE</button>
+        <button class="menu-btn danger" onclick="wipeSystem()">[ 3 ] APAGAR SISTEMA (WIPE)</button>
+    </div>
+
+    <!-- TELA LOGIN -->
+    <div id="menu-login" class="screen">
+        <label id="login-label">CONEXÃO SEGURA - OPERADOR:</label>
+        <input type="text" id="login-user" placeholder="Username..." autocomplete="off">
+        
+        <div class="auth-modes" id="login-modes-bar">
+            <button id="btn-login-mode-digit" class="mode-btn selected" onclick="setLoginAuthMode('digit')">KEYPAD</button>
+            <button id="btn-login-mode-pattern" class="mode-btn" onclick="setLoginAuthMode('pattern')">PATTERN</button>
+            <button id="btn-login-mode-draw" class="mode-btn" onclick="setLoginAuthMode('draw')">ASSINATURA</button>
+        </div>
+
+        <div id="login-digit-container" style="width:100%;">
+            <input type="password" id="login-pass" placeholder="Passcode..." style="margin-top: 10px;">
+            <p id="login-hint" style="font-size: 10px; color: #444; margin-top: 15px;">PRESSIONE ENTER NO PASSWORD PARA ENTRAR</p>
+        </div>
+
+        <div id="login-pattern-container" class="pad-container">
+            <p style="font-size: 10px; color: #666; margin: 5px 0;">Deslize para ligar os pontos do padrão:</p>
+            <canvas id="login-pattern-canvas" width="240" height="240"></canvas>
+            <button class="menu-btn" id="btn-val-pattern" onclick="validateLoginPattern()" style="text-align:center; margin-top:15px;">[ ENTRAR ]</button>
+        </div>
+
+        <div id="login-draw-container" class="pad-container">
+            <p style="font-size: 10px; color: #666; margin: 5px 0;">Desenhe sua assinatura padrão no painel:</p>
+            <canvas id="login-canvas" width="280" height="180"></canvas>
+            <button class="clear-pad-btn" id="btn-clear-draw" onclick="clearCanvas('login-canvas')">Limpar Traço</button>
+            <button class="menu-btn" id="btn-val-draw" onclick="validateLoginDraw()" style="text-align:center; margin-top:15px;">[ ENVIAR VETOR ]</button>
+        </div>
+    </div>
+
+    <!-- TELA RECUPERAÇÃO: Passo 1 -->
+    <div id="recovery-step1" class="screen">
+        <label>VERIFICAÇÃO DE IDENTIDADE:</label>
+        <input type="text" id="recovery-username" placeholder="Qual o nome do usuário cadastrado?" autocomplete="off">
+        <p id="rec-user-hint" style="font-size: 10px; color: #444; margin-top: 15px;">PRESSIONE ENTER PARA CONFIRMAR</p>
+    </div>
+
+    <!-- TELA RECUPERAÇÃO: Passo 2 -->
+    <div id="recovery-step2" class="screen">
+        <label style="color: #eab308;">DESAFIO TEMPORAL KERNEL</label>
+        <p style="font-size: 11px; color: #aaa; margin: 10px 0;">Acerte o registro exato de criação deste terminal para descriptografar os dados:</p>
+        <div id="date-options-container" style="width: 100%;"></div>
+    </div>
+
+    <!-- FASE 2: Cadastro de Nome -->
     <div id="phase2" class="screen">
-        <label>IDENTIFIQUE-SE NO TERMINAL:</label>
-        <input type="text" id="username" autocomplete="off" placeholder="Username..." autofocus>
-        <p style="font-size: 10px; color: #444; margin-top: 10px;">PRESSIONE ENTER PARA CONFIRMAR</p>
+        <label>NENHUM OS DETECTADO. CRIE SEU OPERADOR:</label>
+        <input type="text" id="username" autocomplete="off" placeholder="Novo Username..." autofocus>
+        <p id="user-hint" style="font-size: 10px; color: #444; margin-top: 10px;">PRESSIONE ENTER PARA CONFIRMAR</p>
     </div>
 
     <div id="phase2b" class="screen">
@@ -74,16 +161,41 @@
         <div class="progress-bar"><div id="fillMid" class="fill"></div></div>
     </div>
 
+    <!-- FASE 2C: Cadastro Híbrido Completo -->
     <div id="phase2c" class="screen">
-        <label>ENTRY_KEY REQUIRED:</label>
-        <input type="password" id="password" placeholder="Passcode...">
-        <p style="font-size: 10px; color: #444; margin-top: 10px;">PRESSIONE ENTER PARA ACESSAR</p>
+        <label id="reg-title">ESTRUTURA DE AUTENTICAÇÃO (1/3):</label>
+        
+        <div id="reg-digit-container" style="width:100%;">
+            <input type="password" id="password" placeholder="Nova Senha / PIN...">
+            <p id="pass-hint" style="font-size: 10px; color: #666; margin-top: 10px;">Defina seu código numérico/texto e dê Enter</p>
+        </div>
+
+        <div id="reg-pattern-container" class="pad-container">
+            <p style="font-size: 10px; color: #aaa; margin: 5px 0;">Conecte os nós para registrar o padrão de desbloqueio:</p>
+            <canvas id="reg-pattern-canvas" width="240" height="240"></canvas>
+            <div style="display:flex; gap:10px; width:100%; margin-top:15px;">
+                <button class="menu-btn" onclick="skipRegisterPattern()" style="text-align:center; flex:1;">[ PULAR ]</button>
+                <button class="menu-btn" onclick="saveRegisterPattern()" style="text-align:center; flex:1; border-color:#3b82f6;">[ SALVAR ]</button>
+            </div>
+        </div>
+
+        <div id="reg-draw-container" class="pad-container">
+            <p style="font-size: 10px; color: #666; margin: 5px 0;">Faça um desenho de assinatura contínuo:</p>
+            <canvas id="reg-canvas" width="280" height="180"></canvas>
+            <button class="clear-pad-btn" onclick="clearCanvas('reg-canvas')">Limpar Traço</button>
+            <div style="display:flex; gap:10px; width:100%; margin-top:15px;">
+                <button class="menu-btn" onclick="skipRegisterDraw()" style="text-align:center; flex:1;">[ PULAR ]</button>
+                <button class="menu-btn" onclick="saveRegisterDraw()" style="text-align:center; flex:1; border-color:#3b82f6;">[ CONCLUIR ]</button>
+            </div>
+        </div>
     </div>
 
+    <!-- FASE 3: Logs -->
     <div id="phase3" class="screen">
         <div id="log-container"></div>
     </div>
 
+    <!-- FASE 4: Boas-vindas -->
     <div id="phase4" class="screen">
         <div id="user-welcome" style="margin-bottom: 10px; font-size: 14px; letter-spacing: 2px;"></div>
         <div class="status-text" style="font-size: 10px; color: #888;">INICIANDO KERNEL SELECIONADO...</div>
@@ -91,95 +203,526 @@
     </div>
 
     <script>
-        const phase1 = document.getElementById('phase1');
-        const phase2 = document.getElementById('phase2');
-        const phase2b = document.getElementById('phase2b');
-        const phase2c = document.getElementById('phase2c');
-        const phase3 = document.getElementById('phase3');
-        const phase4 = document.getElementById('phase4');
+        const screens = ['phase1', 'os-menu', 'menu-login', 'recovery-step1', 'recovery-step2', 'phase2', 'phase2b', 'phase2c', 'phase3', 'phase4'];
+        let currentTrackedPoints = [];
+        let logData = ["Carregando Kernel Principal...", "Montando partições de segurança...", "Decodificando cofre LocalStorage...", "Ligando subsistema de nodes e vetores...", "Liberando ambiente operacional..."];
+        
+        let failedAttempts = 0;
+        let cooldownActive = false;
 
-        // Função para detectar qual sistema deve ser carregado
+        let patternNodes = [];
+        let selectedPatternPath = [];
+
+        function changeScreen(targetId) {
+            screens.forEach(id => document.getElementById(id).classList.remove('active'));
+            document.getElementById(targetId).classList.add('active');
+        }
+
         const getTargetOS = () => localStorage.getItem("selected_os") || "os.html";
 
-        /* --- LÓGICA DO BOTÃO DE CACHE (DUAL BOOT) --- */
-        document.getElementById("cacheBtn").onclick = function() {
-            const u = localStorage.getItem("os_user");
-            const p = localStorage.getItem("os_pass");
-            const target = getTargetOS();
-
-            if(u && p) {
-                // Se o usuário já logou antes, pula direto para o OS salvo
-                window.location.href = target;
-            } else {
-                alert("Nenhum registro de usuário encontrado no cache local.");
-            }
-        };
-
-        /* --- FASE 1: Carregamento Inicial --- */
+        /* --- FASE 1: Animação Inicial --- */
         let p1 = 0;
         const int1 = setInterval(() => {
             p1 += 2;
             document.getElementById('fill1').style.width = p1 + "%";
             if(p1 >= 100) {
                 clearInterval(int1);
-                phase1.classList.remove('active');
-                phase2.classList.add('active');
-                document.getElementById('username').focus();
+                if (localStorage.getItem("os_user") && (localStorage.getItem("os_pass") || localStorage.getItem("os_draw") || localStorage.getItem("os_pattern"))) {
+                    changeScreen('os-menu');
+                } else {
+                    changeScreen('phase2');
+                    document.getElementById('username').focus();
+                }
             }
-        }, 30);
+        }, 20);
 
-        /* --- FASE 2: Input de Nome --- */
-        document.getElementById('username').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && this.value.length > 2) {
-                localStorage.setItem("ghost_lang", "pt");
-                localStorage.setItem('os_user', this.value);
-                phase2.classList.remove('active');
-                phase2b.classList.add('active');
+        /* --- INTERFACES DE LOGIN --- */
+        function setLoginAuthMode(mode) {
+            if(cooldownActive) return;
+            document.getElementById('btn-login-mode-digit').classList.toggle('selected', mode === 'digit');
+            document.getElementById('btn-login-mode-pattern').classList.toggle('selected', mode === 'pattern');
+            document.getElementById('btn-login-mode-draw').classList.toggle('selected', mode === 'draw');
+            
+            document.getElementById('login-digit-container').style.display = mode === 'digit' ? 'block' : 'none';
+            document.getElementById('login-pattern-container').classList.toggle('visible', mode === 'pattern');
+            document.getElementById('login-draw-container').classList.toggle('visible', mode === 'draw');
+            
+            if(mode === 'draw') setupCanvasHandlers('login-canvas');
+            if(mode === 'pattern') setupPatternHandlers('login-pattern-canvas');
+        }
 
-                let p = 0;
-                const mid = setInterval(() => {
-                    p += 5;
-                    document.getElementById("fillMid").style.width = p + "%";
-                    if(p >= 100) {
-                        clearInterval(mid);
-                        phase2b.classList.remove('active');
-                        phase2c.classList.add('active');
-                        document.getElementById("password").focus();
+        function openLogin() {
+            changeScreen('menu-login');
+            if(localStorage.getItem("os_pass")) setLoginAuthMode('digit');
+            else if(localStorage.getItem("os_pattern")) setLoginAuthMode('pattern');
+            else setLoginAuthMode('draw');
+            document.getElementById('login-user').focus();
+        }
+
+        /* --- COOLDOWN CONTROL (DELAY DE SENHA) --- */
+        function checkLoginAttempts() {
+            failedAttempts++;
+            let cooldownTime = 0;
+
+            if (failedAttempts >= 15) cooldownTime = 60;
+            else if (failedAttempts >= 10) cooldownTime = 30;
+            else if (failedAttempts >= 7) cooldownTime = 15;
+            else if (failedAttempts >= 5) cooldownTime = 5;
+
+            if (cooldownTime > 0) {
+                triggerCooldown(cooldownTime);
+                return true;
+            }
+            return false;
+        }
+
+        function triggerCooldown(seconds) {
+            cooldownActive = true;
+            setLockdownState(true);
+            
+            let remaining = seconds;
+            const label = document.getElementById('login-label');
+            
+            const timer = setInterval(() => {
+                label.style.color = '#ff3b30';
+                label.innerText = `SISTEMA BLOQUEADO: AGUARDE ${remaining}s`;
+                remaining--;
+                
+                if (remaining < 0) {
+                    clearInterval(timer);
+                    cooldownActive = false;
+                    setLockdownState(false);
+                    label.style.color = '#fff';
+                    label.innerText = "CONEXÃO SEGURA - OPERADOR:";
+                    if(failedAttempts >= 15) failedAttempts = 0;
+                }
+            }, 1000);
+        }
+
+        function setLockdownState(lock) {
+            document.getElementById('login-user').disabled = lock;
+            document.getElementById('login-pass').disabled = lock;
+            document.getElementById('btn-val-pattern').disabled = lock;
+            document.getElementById('btn-val-draw').disabled = lock;
+            document.getElementById('btn-clear-draw').disabled = lock;
+            
+            document.querySelectorAll('#login-modes-bar .mode-btn').forEach(btn => btn.disabled = lock);
+        }
+
+        /* --- ENGINE DO LOCK PATTERN --- */
+        function setupPatternHandlers(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            let isDrawing = false;
+
+            patternNodes = [];
+            selectedPatternPath = [];
+            const offset = canvas.width / 4;
+            for (let r = 1; r <= 3; r++) {
+                for (let c = 1; c <= 3; c++) {
+                    patternNodes.push({ id: (r-1)*3 + c, x: c * offset, y: r * offset });
+                }
+            }
+
+            function drawPatternLayout() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                patternNodes.forEach(node => {
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, 8, 0, Math.PI * 2);
+                    ctx.fillStyle = selectedPatternPath.includes(node.id) ? '#3b82f6' : '#333';
+                    ctx.fill();
+                });
+                if (selectedPatternPath.length > 0) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#3b82f6';
+                    ctx.lineWidth = 4;
+                    let firstNode = patternNodes.find(n => n.id === selectedPatternPath[0]);
+                    ctx.moveTo(firstNode.x, firstNode.y);
+                    for (let i = 1; i < selectedPatternPath.length; i++) {
+                        let nextNode = patternNodes.find(n => n.id === selectedPatternPath[i]);
+                        ctx.lineTo(nextNode.x, nextNode.y);
                     }
-                }, 30);
+                    ctx.stroke();
+                }
             }
-        });
 
-        /* --- FASE 2C: Input de Senha --- */
+            canvas.onmousedown = canvas.ontouchstart = (e) => {
+                if(cooldownActive) return;
+                isDrawing = true;
+                selectedPatternPath = [];
+                handleTrackMove(e);
+            };
+
+            canvas.onmousemove = canvas.ontouchmove = (e) => {
+                if (!isDrawing || cooldownActive) return;
+                e.preventDefault();
+                handleTrackMove(e);
+            };
+
+            canvas.onmouseup = canvas.ontouchend = canvas.onmouseleave = () => { isDrawing = false; };
+
+            function handleTrackMove(e) {
+                const pos = getPos(e, canvas);
+                patternNodes.forEach(node => {
+                    let dist = Math.sqrt((pos.x - node.x)**2 + (pos.y - node.y)**2);
+                    if (dist < 22) {
+                        if (!selectedPatternPath.includes(node.id)) {
+                            selectedPatternPath.push(node.id);
+                        }
+                    }
+                });
+                drawPatternLayout();
+            }
+            drawPatternLayout();
+        }
+
+        /* --- CADASTRO SEQUENCIAL HÍBRIDO --- */
         document.getElementById('password').addEventListener('keypress', function(e) {
-            if(e.key === "Enter" && this.value.length > 1) {
-                localStorage.setItem('os_pass', this.value);
-                phase2c.classList.remove('active');
-                startLogs();
+            if(e.key === "Enter") {
+                if (this.value.trim().length > 0) {
+                    localStorage.setItem('os_pass', this.value);
+                }
+                document.getElementById('reg-title').innerText = "LOCK PATTERN (2/3):";
+                document.getElementById('reg-digit-container').style.display = "none";
+                document.getElementById('reg-pattern-container').classList.add('visible');
+                setupPatternHandlers('reg-pattern-canvas');
             }
         });
 
-        /* --- FASE 3: Logs Sequenciais --- */
-        const logData = [
-            "Detectando Kernel de Interface...",
-            "Montando diretórios /sys/kernel...",
-            "Iniciando subsistema Ghost_Core...",
-            "Carregando drivers de hardware...",
-            "Limpando registros de cache temporário...",
-            "Finalizando handshake de segurança...",
-            "Sistema pronto para execução."
-        ];
+        function saveRegisterPattern() {
+            if (selectedPatternPath.length < 3) {
+                alert("Padrão de segurança muito fraco. Conecte pelo menos 3 pontos.");
+                return;
+            }
+            localStorage.setItem("os_pattern", JSON.stringify(selectedPatternPath));
+            goToRegisterStep3();
+        }
+
+        function skipRegisterPattern() { goToRegisterStep3(); }
+
+        function goToRegisterStep3() {
+            document.getElementById('reg-title').innerText = "ASSINATURA VISUAL (3/3):";
+            document.getElementById('reg-pattern-container').classList.remove('visible');
+            document.getElementById('reg-draw-container').classList.add('visible');
+            setupCanvasHandlers('reg-canvas');
+        }
+
+        function saveRegisterDraw() {
+            if(currentTrackedPoints.length >= 10) {
+                const normalized = normalizePoints(currentTrackedPoints);
+                localStorage.setItem("os_draw", JSON.stringify(normalized));
+            }
+            validateFinalRegistration();
+        }
+
+        function skipRegisterDraw() { validateFinalRegistration(); }
+
+        function validateFinalRegistration() {
+            if(!localStorage.getItem('os_pass') && !localStorage.getItem('os_pattern') && !localStorage.getItem('os_draw')) {
+                alert("Erro de Segurança: Você precisa definir pelo menos um dos métodos!");
+                window.location.reload();
+                return;
+            }
+            startLogs();
+        }
+
+        /* --- VALIDAÇÕES DE LOGIN COM ALERTAS DETALHADOS --- */
+        document.getElementById('login-pass').addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') {
+                if(cooldownActive) return;
+                const uInput = document.getElementById('login-user').value.trim();
+                const savedUser = localStorage.getItem('os_user');
+                const savedPass = localStorage.getItem('os_pass');
+                
+                if(uInput !== savedUser) {
+                    alert("FALHA NA AUTENTICAÇÃO:\nOperador '" + (uInput || "vazio") + "' não localizado no banco do sistema.");
+                    triggerLoginError('login-pass');
+                    checkLoginAttempts();
+                    return;
+                }
+
+                if(savedPass && this.value === savedPass) {
+                    startLogs();
+                } else {
+                    alert("FALHA NA AUTENTICAÇÃO:\nSenha/Passcode inválido para o operador '" + uInput + "'.");
+                    triggerLoginError('login-pass');
+                    checkLoginAttempts();
+                }
+            }
+        });
+
+        function validateLoginPattern() {
+            if(cooldownActive) return;
+            const uInput = document.getElementById('login-user').value.trim();
+            const savedUser = localStorage.getItem('os_user');
+            const savedPatternData = localStorage.getItem("os_pattern");
+
+            if(uInput !== savedUser) {
+                alert("FALHA NA AUTENTICAÇÃO:\nOperador '" + (uInput || "vazio") + "' não localizado no banco do sistema.");
+                triggerLoginError('login-pattern-canvas');
+                checkLoginAttempts();
+                return;
+            }
+
+            if(!savedPatternData) {
+                alert("MÉTODO INDISPONÍVEL:\nEste usuário não configurou um Lock Pattern.");
+                triggerLoginError('login-pattern-canvas');
+                return;
+            }
+
+            if(JSON.stringify(selectedPatternPath) === savedPatternData) {
+                startLogs();
+            } else {
+                alert("FALHA NA AUTENTICAÇÃO:\nO padrão de nós desenhado está incorreto.");
+                triggerLoginError('login-pattern-canvas');
+                checkLoginAttempts();
+                setupPatternHandlers('login-pattern-canvas');
+            }
+        }
+
+        function validateLoginDraw() {
+            if(cooldownActive) return;
+            const uInput = document.getElementById('login-user').value.trim();
+            const savedUser = localStorage.getItem('os_user');
+            const savedDrawData = localStorage.getItem("os_draw");
+
+            if(uInput !== savedUser) {
+                alert("FALHA NA AUTENTICAÇÃO:\nOperador '" + (uInput || "vazio") + "' não localizado no banco do sistema.");
+                triggerLoginError('login-canvas');
+                checkLoginAttempts();
+                return;
+            }
+
+            if(!savedDrawData) {
+                alert("MÉTODO INDISPONÍVEL:\nEste usuário não possui assinatura visual registrada.");
+                triggerLoginError('login-canvas');
+                return;
+            }
+
+            const savedPattern = JSON.parse(savedDrawData);
+            const currentPattern = normalizePoints(currentTrackedPoints);
+            const matchScore = calculateMatchPercentage(savedPattern, currentPattern);
+
+            if(matchScore >= 50) {
+                startLogs();
+            } else {
+                alert(`FALHA NA BIOMETRIA VETORIAL:\nSua assinatura obteve ${matchScore.toFixed(1)}% de precisão.\nTaxa mínima exigida pelo Kernel: 50.0%`);
+                triggerLoginError('login-canvas');
+                clearCanvas('login-canvas');
+                checkLoginAttempts();
+            }
+        }
+
+        function triggerLoginError(elementId) {
+            document.getElementById('login-user').classList.add('error');
+            const targetEl = document.getElementById(elementId);
+            if(targetEl) targetEl.classList.add('error');
+            
+            document.getElementById('login-hint').style.color = '#ff3b30';
+            document.getElementById('login-hint').innerText = "VETORES DE ACESSO OU CREDENCIAL INCORRETA.";
+            
+            setTimeout(() => {
+                document.getElementById('login-user').classList.remove('error');
+                if(targetEl) targetEl.classList.remove('error');
+            }, 300);
+        }
+
+        /* --- ENGINE GRÁFICA DA ASSINATURA VETORIAL --- */
+        function setupCanvasHandlers(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            let isDrawing = false;
+            
+            canvas.onmousedown = canvas.ontouchstart = (e) => {
+                if(cooldownActive) return;
+                isDrawing = true;
+                currentTrackedPoints = []; 
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.beginPath();
+                ctx.strokeStyle = "#3b82f6";
+                ctx.lineWidth = 3;
+                const pos = getPos(e, canvas);
+                ctx.moveTo(pos.x, pos.y);
+                currentTrackedPoints.push(pos);
+            };
+
+            canvas.onmousemove = canvas.ontouchmove = (e) => {
+                if (!isDrawing || cooldownActive) return;
+                e.preventDefault();
+                const pos = getPos(e, canvas);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+                currentTrackedPoints.push(pos);
+            };
+
+            canvas.onmouseup = canvas.ontouchend = canvas.onmouseleave = () => { isDrawing = false; };
+        }
+
+        function getPos(e, canvas) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clientX - rect.left, y: clientY - rect.top };
+        }
+
+        function clearCanvas(canvasId) {
+            if(cooldownActive) return;
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            currentTrackedPoints = [];
+        }
+
+        function normalizePoints(points) {
+            if(points.length === 0) return [];
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            points.forEach(p => {
+                if(p.x < minX) minX = p.x; if(p.x > maxX) maxX = p.x;
+                if(p.y < minY) minY = p.y; if(p.y > maxY) maxY = p.y;
+            });
+            const width = maxX - minX || 1; const height = maxY - minY || 1;
+            let normalized = points.map(p => ({
+                x: ((p.x - minX) / width) * 100,
+                y: ((p.y - minY) / height) * 100
+            }));
+            let sampled = [];
+            const samplesTarget = 40;
+            for(let i = 0; i < samplesTarget; i++) {
+                let idx = Math.floor((i / samplesTarget) * normalized.length);
+                sampled.push(normalized[idx]);
+            }
+            return sampled;
+        }
+
+        function calculateMatchPercentage(patternA, patternB) {
+            if(!patternA || !patternB || patternA.length === 0 || patternB.length === 0) return 0;
+            let totalDistance = 0;
+            for(let i = 0; i < patternA.length; i++) {
+                let dx = patternA[i].x - patternB[i].x;
+                let dy = patternA[i].y - patternB[i].y;
+                totalDistance += Math.sqrt(dx*dx + dy*dy);
+            }
+            let avgDistance = totalDistance / patternA.length;
+            let accuracy = 100 - (avgDistance * 2.2); 
+            return Math.max(0, Math.min(100, accuracy));
+        }
+
+        /* --- OPERAÇÕES RESTANTES --- */
+        function wipeSystem() {
+            if(confirm("ATENÇÃO: Deseja apagar permanentemente o Kernel e o cache do usuário? Isso reiniciará o OS.")) {
+                localStorage.clear();
+                window.location.reload();
+            }
+        }
+
+        function openRecovery() {
+            changeScreen('recovery-step1');
+            document.getElementById('recovery-username').focus();
+        }
+
+        document.getElementById('recovery-username').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (this.value.trim() === localStorage.getItem('os_user')) {
+                    this.classList.remove('error');
+                    generateRecoveryChallenge();
+                } else {
+                    this.classList.add('error');
+                    document.getElementById('rec-user-hint').style.color = '#ff3b30';
+                    document.getElementById('rec-user-hint').innerText = "OPERADOR NÃO LOCALIZADO NO COFRE LOCAL.";
+                    setTimeout(() => this.classList.remove('error'), 300);
+                }
+            }
+        });
+
+        function generateRecoveryChallenge() {
+            let systemCreationTime = localStorage.getItem('os_creation_date');
+            if (!systemCreationTime) {
+                const d = new Date();
+                systemCreationTime = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+                localStorage.setItem('os_creation_date', systemCreationTime);
+            }
+            correctDateString = systemCreationTime;
+
+            let dateSet = new Set();
+            dateSet.add(correctDateString);
+
+            while(dateSet.size < 5) {
+                let randomDay = Math.floor(Math.random() * 28) + 1;
+                let randomMonth = Math.floor(Math.random() * 12) + 1;
+                let fakeDate = `${randomDay.toString().padStart(2, '0')}/${randomMonth.toString().padStart(2, '0')}/2026`;
+                dateSet.add(fakeDate);
+            }
+
+            let finalOptions = Array.from(dateSet).sort(() => Math.random() - 0.5);
+            const container = document.getElementById('date-options-container');
+            container.innerHTML = "";
+            
+            finalOptions.forEach(date => {
+                const btn = document.createElement('button');
+                btn.className = 'date-option';
+                btn.innerText = date;
+                btn.onclick = function() { verifyRecoveryAnswer(date); };
+                container.appendChild(btn);
+            });
+
+            changeScreen('recovery-step2');
+        }
+
+        function verifyRecoveryAnswer(selectedDate) {
+            if (selectedDate === correctDateString) {
+                let infoStr = "Chaves ativas recuperadas:\n";
+                if(localStorage.getItem('os_pass')) infoStr += `- Senha: ${localStorage.getItem('os_pass')}\n`;
+                if(localStorage.getItem('os_pattern')) infoStr += `- Lock Pattern: [Configurado]\n`;
+                if(localStorage.getItem('os_draw')) infoStr += `- Assinatura Visual: [Configurada]\n`;
+                
+                alert(`ACESSO FORENSE CONCEDIDO!\n\n${infoStr}`);
+                openLogin();
+            } else {
+                alert("CHAVE TEMPORAL INCORRETA! Protocolo de segurança reiniciado.");
+                changeScreen('os-menu');
+            }
+        }
+
+        document.getElementById('username').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (this.value.trim().length > 2) {
+                    this.classList.remove('error');
+                    localStorage.setItem('os_user', this.value.trim());
+                    
+                    const today = new Date();
+                    const formattedDate = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+                    localStorage.setItem('os_creation_date', formattedDate);
+
+                    changeScreen('phase2b');
+
+                    let p = 0;
+                    const mid = setInterval(() => {
+                        p += 5;
+                        document.getElementById("fillMid").style.width = p + "%";
+                        if(p >= 100) {
+                            clearInterval(mid);
+                            changeScreen('phase2c');
+                        }
+                    }, 20);
+                } else {
+                    this.classList.add('error');
+                    document.getElementById('user-hint').style.color = '#ff3b30';
+                    document.getElementById('user-hint').innerText = "MÍNIMO 3 CARACTERES";
+                    setTimeout(() => this.classList.remove('error'), 300);
+                }
+            }
+        });
 
         function startLogs() {
-            phase3.classList.add('active');
+            changeScreen('phase3');
             const container = document.getElementById('log-container');
+            container.innerHTML = "";
             let current = 0;
 
             function addLog() {
                 if (current < logData.length) {
                     const entry = document.createElement('div');
                     entry.className = 'log-entry';
-                    // Adiciona o log de qual OS está sendo carregado no primeiro log
                     let text = logData[current];
                     if(current === 0) text += ` [${getTargetOS()}]`;
 
@@ -190,7 +733,7 @@
                         entry.classList.add('done');
                         current++;
                         addLog();
-                    }, 600);
+                    }, 400);
                 } else {
                     setTimeout(startFinalPhase, 500);
                 }
@@ -198,11 +741,8 @@
             addLog();
         }
 
-        /* --- FASE 4: Finalização e Salto para o OS --- */
         function startFinalPhase() {
-            phase3.classList.remove('active');
-            phase4.classList.add('active');
-
+            changeScreen('phase4');
             const user = localStorage.getItem('os_user') || "OPERATOR";
             document.getElementById('user-welcome').innerText = "BEM-VINDO, " + user.toUpperCase();
 
@@ -210,14 +750,13 @@
             const targetOS = getTargetOS();
 
             const int2 = setInterval(() => {
-                p2 += 1.5;
+                p2 += 2;
                 document.getElementById('fill2').style.width = p2 + "%";
                 if(p2 >= 100) {
                     clearInterval(int2);
-                    // O "Renomeio Virtual" acontece aqui:
                     window.location.href = targetOS;
                 }
-            }, 40);
+            }, 30);
         }
     </script>
 </body>
