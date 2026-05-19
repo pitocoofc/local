@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GhostOS - LocalStorage Inspector</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #00ff00;
+            font-family: 'Consolas', 'Monaco', monospace;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h2 {
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            color: #fff;
+            letter-spacing: 2px;
+        }
+        .btn {
+            background: #111;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 10px 20px;
+            font-family: monospace;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-bottom: 20px;
+        }
+        .btn:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        .card {
+            background: #111;
+            border: 1px solid #333;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .key {
+            color: #3b82f6;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .value {
+            background: #050505;
+            padding: 10px;
+            border: 1px solid #222;
+            color: #aaa;
+            word-break: break-all;
+            font-size: 13px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .status-empty {
+            color: #ff3b30;
+            text-align: center;
+            padding: 40px;
+            border: 1px dashed #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>[ GHOST_OS // INSPECTOR DE ARMAZENAMENTO LOCAL ]</h2>
+        <p style="color: #666; font-size: 12px;">Este terminal faz uma leitura direta na partição do LocalStorage para auditoria de integridade.</p>
+        
+        <button class="btn" onclick="inspectStorage()">[ ESCANEAR LOCALSTORAGE ]</button>
+        
+        <div id="inspector-output"></div>
+    </div>
+
+    <script>
+        function inspectStorage() {
+            const output = document.getElementById('inspector-output');
+            output.innerHTML = ""; // Limpa a busca anterior
+
+            if (localStorage.length === 0) {
+                output.innerHTML = `<div class="status-empty">> COFRE VAZIO: Nenhum metadado ou chave foi localizada neste domínio.</div>`;
+                return;
+            }
+
+            // Loop por todos os itens guardados no LocalStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+
+                // Cria a estrutura visual para cada chave/valor encontrado
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                // Destaca visualmente se o dado possui a estrutura do nosso AES-GCM (dois pontos dividindo os blocos)
+                let badge = "";
+                if (value.includes(':') && value.split(':').length === 3) {
+                    badge = " <span style='color: #00ff00; font-size: 10px; border: 1px solid #00ff00; padding: 1px 4px; margin-left: 10px;'>[ BLOCO CIFRADO AES-GCM-256 ]</span>";
+                } else if (key === 'os_user') {
+                    badge = " <span style='color: #eab308; font-size: 10px; border: 1px solid #eab308; padding: 1px 4px; margin-left: 10px;'>[ ID OPERADOR / TEXTO LIMPO ]</span>";
+                }
+
+                card.innerHTML = `
+                    <div class="key">> CHAVE IDENTIFICADORA: <span style="color:#fff">${key}</span> ${badge}</div>
+                    <div class="value">${value}</div>
+                `;
+                
+                output.appendChild(card);
+            }
+        }
+
+        // Executa um scan inicial automático ao abrir a página
+        window.onload = inspectStorage;
+    </script>
+</body>
+</html>
