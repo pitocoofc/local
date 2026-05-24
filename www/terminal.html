@@ -2,77 +2,548 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GhostOS - Advanced Bash Shell</title>
     <style>
-        body { background: #000; color: #4ade80; font-family: 'Courier New', monospace; padding: 15px; margin: 0; overflow: hidden; }
-        #output { height: calc(100vh - 50px); overflow-y: auto; white-space: pre-wrap; font-size: 14px; }
-        #input-line { display: flex; gap: 10px; }
-        input { background: transparent; border: none; color: #4ade80; outline: none; flex: 1; font-family: inherit; font-size: 14px; }
-        .prompt { color: #3b82f6; }
+        * { box-sizing: border-box; }
+        body { 
+            background: #0c0c0c; 
+            color: #4ade80; 
+            font-family: 'Consolas', 'Courier New', monospace; 
+            padding: 0; 
+            margin: 0; 
+            height: 100vh;
+            height: 100dvh; /* Garante tamanho dinâmico considerando teclado mobile */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        #terminal-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 10px 5px 10px;
+        }
+
+        #output { 
+            white-space: pre-wrap; 
+            font-size: 14px; 
+            line-height: 1.5;
+        }
+
+        #input-line { 
+            display: flex; 
+            gap: 5px; 
+            align-items: center;
+            padding: 5px 10px;
+        }
+
+        input, textarea { 
+            background: transparent; 
+            border: none; 
+            color: #ffffff; 
+            outline: none; 
+            font-family: inherit; 
+            font-size: 14px; 
+        }
+
+        input { flex: 1; }
+
+        /* BARRA DE ATALHOS ESTILO TERMUX (Acompanha o teclado nativamente) */
+        #termux-bar {
+            background: #141414;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 6px 2px;
+            border-top: 1px solid #222;
+            user-select: none;
+            width: 100%;
+        }
+        .termux-btn {
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 8px 0;
+            cursor: pointer;
+            text-align: center;
+            flex: 1;
+            max-width: 60px;
+            border-radius: 3px;
+        }
+        .termux-btn:active {
+            background: #333333;
+        }
+        .termux-btn.active {
+            background: #22c55e;
+            color: #000;
+        }
+
+        /* Interface do Nano Editor (Ajustado para ocupar a viewport sem quebrar a pilha) */
+        #nano-ui {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            background: #000088;
+            color: #ffffff;
+            flex-direction: column;
+            padding: 5px;
+            z-index: 9999;
+        }
+        #nano-header { background: #ffffff; color: #000088; text-align: center; font-weight: bold; font-size: 13px; padding: 2px 0; }
+        #nano-editor { flex: 1; width: 100%; resize: none; background: transparent; color: #ffffff; border: none; padding: 10px 5px; font-size: 14px; line-height: 1.4; }
+        #nano-footer { background: transparent; color: #ffffff; font-size: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; border-top: 1px solid #ffffff; padding-top: 5px; }
+        .nano-btn { background: #222; border: 1px solid #555; color: #fff; text-align: center; padding: 4px; cursor: pointer; border-radius: 3px; }
+
+        /* Cores Bash */
+        .user { color: #22c55e; font-weight: bold; }
+        .at { color: #ffffff; }
+        .host { color: #22c55e; font-weight: bold; }
+        .separator { color: #ffffff; }
+        .dir { color: #3b82f6; font-weight: bold; }
+        .char { color: #ffffff; }
+        
         .error { color: #ef4444; }
         .success { color: #22c55e; }
+        .ls-dir { color: #3b82f6; font-weight: bold; }
+        .ls-file { color: #ffffff; }
+        .help-cmd { color: #eab308; }
     </style>
 </head>
 <body>
-    <div id="output">GHOST OS [Version 1.0.0-beta]
-(c) 2026 Ndj-lib Corporation. Todos os direitos reservados.
-Digite 'help' para ver os comandos.
+
+    <div id="terminal-wrapper" onclick="focarInput()">
+        <div id="output">GhostOS GNU/Linux v2.9.2-release (kernel_arm64)
+Sincronizado via LocalStorage Virtual File System.
+Digite 'help' para listar utilitários de sistema.
 
 </div>
-    <div id="input-line">
-        <span class="prompt">ghost@root:~$</span>
-        <input type="text" id="cmd" autofocus spellcheck="false">
+        <div id="input-line">
+            <span class="prompt-container" id="prompt-box">
+                <span class="user">ghost</span><span class="at">@</span><span class="host">root</span><span class="separator">:</span><span class="dir" id="current-dir">~</span><span class="char">#</span>
+            </span>
+            <input type="text" id="cmd" autofocus spellcheck="false" autocomplete="off">
+        </div>
+    </div>
+
+    <div id="termux-bar">
+        <div class="termux-btn" onclick="triggerKey('ESC')">ESC</div>
+        <div class="termux-btn" onclick="triggerKey('/')">/</div>
+        <div class="termux-btn" onclick="triggerKey('-')">-</div>
+        <div class="termux-btn" id="btn-ctrl" onclick="toggleCtrl()">CTRL</div>
+        <div class="termux-btn" onclick="triggerKey('ALT')">ALT</div>
+        <div class="termux-btn" onclick="triggerTab()">TAB</div>
+        <div class="termux-btn" onclick="triggerSeta('Up')">↑</div>
+        <div class="termux-btn" onclick="triggerSeta('Down')">↓</div>
+    </div>
+
+    <div id="nano-ui">
+        <div id="nano-header">GNU nano 5.4 - arquivo.txt</div>
+        <textarea id="nano-editor" spellcheck="false"></textarea>
+        <div id="nano-footer">
+            <div class="nano-btn" onclick="salvarNano()">^S Salvar</div>
+            <div class="nano-btn" onclick="fecharNano()">^X Sair</div>
+            <div style="grid-column: span 2; color: #aaa; text-align: right; padding-right: 5px; font-size: 11px;">Interface Nano de alta fidelidade.</div>
+        </div>
     </div>
 
     <script>
+        const wrapper = document.getElementById('terminal-wrapper');
         const output = document.getElementById('output');
         const input = document.getElementById('cmd');
+        const currentDirEl = document.getElementById('current-dir');
+        const btnCtrl = document.getElementById('btn-ctrl');
+        
+        const nanoUi = document.getElementById('nano-ui');
+        const nanoHeader = document.getElementById('nano-header');
+        const nanoEditor = document.getElementById('nano-editor');
 
-        const commands = {
-            'help': () => "Comandos: help, clear, sys --info, ghost --bench, net --scan, kernel --read",
-            'clear': () => { output.innerHTML = ''; return ''; },
-            'sys --info': () => {
-                return `[HARDWARE REPORT]
-CPU: SnapCobra 690 v8.2
-RAM: 8GB + 5GB V-RAM (Virtualization ACTIVE)
-GPU: Ghost Render Engine 2.0
-STORAGE: 128GB (25.1GB Occupied)`;
-            },
-            'net --scan': () => {
-                return `[SCANNING NETWORK INTERFACES...]
-wlan0: PROMISCUOUS MODE
-Scanning for SSID...
-> Ndj_Fiber_5G (SECURED)
-> Ghost_Net_Hidden (OPEN)
-> Multilaser_Default (SECURED)
-Status: driver_ndj is ON. Connection stable.`;
-            },
-            'ghost --bench': () => {
-                return `[BENCHMARK STARTING]
-SnapCobra Core 1: [||||||||||] 100%
-SnapCobra Core 2: [||||||||||] 100%
-V-RAM Sync: 5.2GB/5.0GB (Overclocking...)
-RESULT: 84.921 G-Points. Sistema apto para Cloud Rendering.`;
-            },
-            'kernel --read': () => "Lendo kernel.txt do GitHub...\n" + (parent.kernel_data || "Aguardando sincronização com repositório...")
+        let historicoComandos = [];
+        let historicoIndex = -1;
+        let isNanoAberto = false;
+        let arquivoSendoEditado = "";
+        let ctrlPressionado = false;
+
+        const DEFAULT_FS = {
+            "root": {
+                "type": "dir",
+                "content": {
+                    "home": {
+                        "type": "dir",
+                        "content": {
+                            "ghost": {
+                                "type": "dir",
+                                "content": {
+                                    "projetos": { "type": "dir", "content": {} },
+                                    "index.js": { "type": "file", "content": "console.log('Testando Runtime Node do GhostOS...');\nlet a = 10;\nlet b = 20;\nconsole.log('Resultado da soma:', a + b);" },
+                                    "readme.txt": { "type": "file", "content": "Bem-vindo ao GhostOS v2.9.\nUse 'nano <arquivo>' para escrever códigos e 'node <arquivo>' para rodar JavaScript." }
+                                }
+                            }
+                        }
+                    },
+                    "etc": { "type": "dir", "content": {} },
+                    "var": { "type": "dir", "content": {} }
+                }
+            }
         };
 
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const fullCmd = input.value.trim();
-                const cmd = fullCmd.toLowerCase();
-                
-                output.innerHTML += `<span class="prompt">ghost@root:~$</span> ${fullCmd}\n`;
-                
-                if (commands[cmd]) {
-                    output.innerHTML += commands[cmd]() + "\n\n";
-                } else if (cmd !== '') {
-                    output.innerHTML += `<span class="error">Comando '${cmd}' não reconhecido pelo Kernel.</span>\n\n`;
+        let FS = JSON.parse(localStorage.getItem('ghost_fs')) || DEFAULT_FS;
+        let currentPath = ["root", "home", "ghost"]; 
+
+        function salvarFS() { localStorage.setItem('ghost_fs', JSON.stringify(FS)); }
+        function focarInput() { if (!isNanoAberto) input.focus(); else nanoEditor.focus(); }
+
+        function getDiretorioAtual() {
+            let node = FS;
+            for (let folder of currentPath) { node = node[folder].content; }
+            return node;
+        }
+
+        function obterCaminhoVisual() {
+            if (currentPath[1] === "home" && currentPath[2] === "ghost") {
+                let sub = currentPath.slice(3).join('/');
+                return sub ? `~/${sub}` : `~`;
+            }
+            return "/" + currentPath.slice(1).join('/');
+        }
+
+        function atualizarPrompt() { currentDirEl.innerText = obterCaminhoVisual(); }
+
+        function toggleCtrl() {
+            ctrlPressionado = !ctrlPressionado;
+            btnCtrl.classList.toggle('active', ctrlPressionado);
+            focarInput();
+        }
+
+        function triggerKey(char) {
+            let alvo = isNanoAberto ? nanoEditor : input;
+            let start = alvo.selectionStart;
+            let end = alvo.selectionEnd;
+            let text = alvo.value;
+            alvo.value = text.substring(0, start) + char + text.substring(end);
+            alvo.selectionStart = alvo.selectionEnd = start + char.length;
+            alvo.focus();
+        }
+
+        function triggerSeta(dir) {
+            if (isNanoAberto) return;
+            if (dir === 'Up') {
+                if (historicoComandos.length > 0 && historicoIndex > 0) {
+                    historicoIndex--;
+                    input.value = historicoComandos[historicoIndex];
                 }
+            } else {
+                if (historicoComandos.length > 0 && historicoIndex < historicoComandos.length - 1) {
+                    historicoIndex++;
+                    input.value = historicoComandos[historicoIndex];
+                } else {
+                    historicoIndex = historicoComandos.length;
+                    input.value = '';
+                }
+            }
+            input.focus();
+        }
+
+        function triggerTab() {
+            if (isNanoAberto) return;
+            let val = input.value;
+            let tokens = val.split(' ');
+            let ultimoToken = tokens[tokens.length - 1] || "";
+            
+            if (ultimoToken) {
+                let dir = getDiretorioAtual();
+                let matches = Object.keys(dir).filter(k => k.startsWith(ultimoToken));
+                if (matches.length === 1) {
+                    let complemento = matches[0].slice(ultimoToken.length);
+                    input.value += complemento + (dir[matches[0]].type === 'dir' ? '/' : ' ');
+                }
+            }
+            input.focus();
+        }
+
+        /* --- ENGINE DE COMANDOS --- */
+        const shell = {
+            'help': () => {
+                return `Utilitários GNU Avançados Emulados:
+  <span class="help-cmd">ls</span>               Lista o diretório atual
+  <span class="help-cmd">cd [dir]</span>         Navega entre caminhos
+  <span class="help-cmd">mkdir [nome]</span>     Cria diretórios
+  <span class="help-cmd">touch [arq]</span>      Cria arquivos vazios
+  <span class="help-cmd">cat [arq]</span>        Exibe o conteúdo do arquivo
+  <span class="help-cmd">rm [alvo]</span>        Remove arquivos ou pastas vazias
+  <span class="help-cmd">mv [origem] [dest]</span>Move ou renomeia alvos
+  <span class="help-cmd">cp [origem] [dest]</span>Copia arquivos
+  <span class="help-cmd">pwd</span>              Imprime o diretório atual
+  <span class="help-cmd">whoami</span>           Identidade do usuário ativo
+  <span class="help-cmd">uname -a</span>         Informações do Kernel
+  <span class="help-cmd">echo [texto]</span>     Exibe texto na tela
+  <span class="help-cmd">nano [arq]</span>       Abre o editor de texto interativo
+  <span class="help-cmd">node [arq.js]</span>    Executa o interpretador JavaScript
+  <span class="help-cmd">git clone [url]</span>  Clona repositórios reais do GitHub`;
+            },
+
+            'ls': () => {
+                let dir = getDiretorioAtual();
+                let itens = Object.keys(dir);
+                if (itens.length === 0) return '';
+                return itens.map(item => dir[item].type === 'dir' ? `<span class="ls-dir">${item}/</span>` : `<span class="ls-file">${item}</span>`).join('   ');
+            },
+
+            'cd': (args) => {
+                if (!args[0]) { currentPath = ["root", "home", "ghost"]; atualizarPrompt(); return ''; }
+                let destino = args[0];
+                let dirOriginal = [...currentPath];
+
+                if (destino === "..") {
+                    if (currentPath.length > 1) currentPath.pop();
+                    atualizarPrompt();
+                    return '';
+                }
+
+                let partes = destino.split('/');
+                let escopo = getDiretorioAtual();
+
+                for (let parte of partes) {
+                    if (!parte || parte === '.') continue;
+                    if (parte === '..') {
+                        if (currentPath.length > 1) currentPath.pop();
+                        escopo = getDiretorioAtual();
+                        continue;
+                    }
+                    if (escopo[parte] && escopo[parte].type === 'dir') {
+                        currentPath.push(parte);
+                        escopo = escopo[parte].content;
+                    } else {
+                        currentPath = dirOriginal;
+                        return `<span class="error">bash: cd: ${destino}: No such file or directory</span>`;
+                    }
+                }
+                atualizarPrompt();
+                return '';
+            },
+
+            'mkdir': (args) => {
+                if (!args[0]) return `<span class="error">mkdir: missing operand</span>`;
+                let dir = getDiretorioAtual();
+                if (dir[args[0]]) return `<span class="error">mkdir: cannot create directory '${args[0]}': File exists</span>`;
+                dir[args[0]] = { "type": "dir", "content": {} };
+                salvarFS();
+                return '';
+            },
+
+            'touch': (args) => {
+                if (!args[0]) return `<span class="error">touch: missing file operand</span>`;
+                let dir = getDiretorioAtual();
+                if (!dir[args[0]]) { dir[args[0]] = { "type": "file", "content": "" }; salvarFS(); }
+                return '';
+            },
+
+            'cat': (args) => {
+                if (!args[0]) return `<span class="error">cat: missing file operand</span>`;
+                let dir = getDiretorioAtual();
+                if (!dir[args[0]]) return `<span class="error">cat: ${args[0]}: No such file or directory</span>`;
+                if (dir[args[0]].type === 'dir') return `<span class="error">cat: ${args[0]}: Is a directory</span>`;
+                return dir[args[0]].content;
+            },
+
+            'rm': (args) => {
+                if (!args[0]) return `<span class="error">rm: missing operand</span>`;
+                let dir = getDiretorioAtual();
+                if (!dir[args[0]]) return `<span class="error">rm: cannot remove '${args[0]}': No such file or directory</span>`;
+                delete dir[args[0]];
+                salvarFS();
+                return '';
+            },
+
+            'mv': (args) => {
+                if (!args[0] || !args[1]) return `<span class="error">mv: missing file operand</span>`;
+                let dir = getDiretorioAtual();
+                if (!dir[args[0]]) return `<span class="error">mv: cannot stat '${args[0]}': No such file or directory</span>`;
+                dir[args[1]] = dir[args[0]];
+                delete dir[args[0]];
+                salvarFS();
+                return '';
+            },
+
+            'cp': (args) => {
+                if (!args[0] || !args[1]) return `<span class="error">cp: missing file operand</span>`;
+                let dir = getDiretorioAtual();
+                if (!dir[args[0]]) return `<span class="error">cp: cannot stat '${args[0]}': No such file or directory</span>`;
+                if (dir[args[0]].type === 'dir') return `<span class="error">cp: -r not specified, omitting directory '${args[0]}'</span>`;
+                dir[args[1]] = { "type": "file", "content": dir[args[0]].content };
+                salvarFS();
+                return '';
+            },
+
+            'pwd': () => "/" + currentPath.slice(1).join('/'),
+            'whoami': () => "ghost",
+            'uname': (args) => args[0] === '-a' ? "GhostOS GNU/Linux 5.15.0-72-generic #79-Ubuntu SMP arm64 aarch64 GNU/Linux" : "GhostOS",
+            'echo': (args) => args.join(' '),
+
+            'nano': (args) => {
+                if (!args[0]) return `<span class="error">nano: Arquivo obrigatório. Uso: nano &lt;nome&gt;</span>`;
+                arquivoSendoEditado = args[0];
+                let dir = getDiretorioAtual();
                 
-                input.value = '';
-                output.scrollTop = output.scrollHeight;
+                if (!dir[arquivoSendoEditado]) {
+                    nanoEditor.value = "";
+                } else {
+                    if (dir[arquivoSendoEditado].type === 'dir') return `<span class="error">nano: '${arquivoSendoEditado}' é um diretório.</span>`;
+                    nanoEditor.value = dir[arquivoSendoEditado].content;
+                }
+
+                isNanoAberto = true;
+                nanoHeader.innerText = `GNU nano 5.4 - ${arquivoSendoEditado}`;
+                nanoUi.style.display = "flex";
+                setTimeout(() => { nanoEditor.focus(); }, 50);
+                return "OPEN_NANO_SIGNAL";
+            },
+
+            'node': (args) => {
+                if (!args[0]) return `<span class="error">Uso: node &lt;arquivo.js&gt;</span>`;
+                let dir = getDiretorioAtual();
+                if (!dir[args[0]]) return `<span class="error">node: internal/modules/cjs/loader: Cannot find module './${args[0]}'</span>`;
+                if (dir[args[0]].type === 'dir') return `<span class="error">node: Is a directory</span>`;
+
+                let codigoJS = dir[args[0]].content;
+                let logsCapturados = [];
+
+                try {
+                    let simularConsole = {
+                        log: (...params) => { logsCapturados.push(params.map(p => typeof p === 'object' ? JSON.stringify(p) : p).join(' ')); }
+                    };
+                    
+                    let executor = new Function('console', codigoJS);
+                    executor(simularConsole);
+
+                    return logsCapturados.length > 0 ? logsCapturados.join('\n') : 'Process executado com sucesso.';
+                } catch (err) {
+                    return `<span class="error">RuntimeError: ${err.message}</span>`;
+                }
+            },
+
+            'git': async (args) => {
+                if (args[0] !== 'clone' || !args[1]) return `<span class="error">Uso: git clone &lt;url-do-github.git&gt;</span>`;
+                let url = args[1].trim();
+                
+                let match = url.match(/github\.com\/([^\/]+)\/([^\/\.]+)/);
+                if (!match) return `<span class="error">fatal: URL do GitHub inválida.</span>`;
+                
+                let usuario = match[1];
+                let repoNome = match[2].replace('.git', '');
+
+                printLiveOutput(`Clonando em '${repoNome}'...\nBuscando árvore via api.github.com...`);
+
+                try {
+                    let apiUrl = `https://api.github.com/repos/${usuario}/${repoNome}/contents`;
+                    let response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error("Repositório público não encontrado.");
+                    
+                    let arquivos = await response.json();
+                    let dir = getDiretorioAtual();
+                    
+                    dir[repoNome] = { "type": "dir", "content": {} };
+                    let pastaInterna = dir[repoNome].content;
+
+                    for (let item of arquivos) {
+                        if (item.type === 'file') {
+                            let fileRes = await fetch(item.download_url);
+                            let conteudo = await fileRes.text();
+                            pastaInterna[item.name] = { "type": "file", "content": conteudo };
+                        } else if (item.type === 'dir') {
+                            pastaInterna[item.name] = { "type": "dir", "content": {} };
+                        }
+                    }
+
+                    salvarFS();
+                    return `<span class="success">Clonagem concluída! Diretório '${repoNome}' salvo.</span>`;
+                } catch (err) {
+                    return `<span class="error">fatal: erro ao clonar: ${err.message}</span>`;
+                }
+            }
+        };
+
+        function salvarNano() {
+            if (!isNanoAberto) return;
+            let dir = getDiretorioAtual();
+            dir[arquivoSendoEditado] = { "type": "file", "content": nanoEditor.value };
+            salvarFS();
+        }
+
+        function fecharNano() {
+            isNanoAberto = false;
+            nanoUi.style.display = "none";
+            output.innerHTML += `> Editor Nano fechado. Retornando ao terminal.\n\n`;
+            wrapper.scrollTop = wrapper.scrollHeight;
+            if(ctrlPressionado) toggleCtrl();
+            setTimeout(() => { input.focus(); }, 50);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (isNanoAberto) {
+                if ((e.ctrlKey || ctrlPressionado) && e.key.toLowerCase() === 's') { e.preventDefault(); salvarNano(); if(ctrlPressionado) toggleCtrl(); }
+                if ((e.ctrlKey || ctrlPressionado) && e.key.toLowerCase() === 'x') { e.preventDefault(); fecharNano(); }
             }
         });
+
+        function printLiveOutput(text) {
+            output.innerHTML += text + "\n";
+            wrapper.scrollTop = wrapper.scrollHeight;
+        }
+
+        input.addEventListener('keydown', async (e) => {
+            if (e.key === 'Enter') {
+                const rawInput = input.value;
+                const cleanInput = rawInput.trim();
+                
+                if (cleanInput !== '') {
+                    if (historicoComandos.length === 0 || historicoComandos[historicoComandos.length - 1] !== cleanInput) {
+                        historicoComandos.push(cleanInput);
+                    }
+                }
+                historicoIndex = historicoComandos.length;
+
+                let visualPrompt = obterCaminhoVisual();
+                output.innerHTML += `<span><span class="user">ghost</span><span class="at">@</span><span class="host">root</span><span class="separator">:</span><span class="dir">${visualPrompt}</span><span class="char">#</span> ${rawInput}</span>\n`;
+
+                input.value = '';
+
+                let tokens = cleanInput.split(' ').filter(t => t !== '');
+                if (tokens.length > 0) {
+                    let cmd = tokens[0].toLowerCase();
+                    let args = tokens.slice(1);
+
+                    if (cmd === 'clear') {
+                        output.innerHTML = '';
+                    } else if (shell[cmd]) {
+                        let result = await shell[cmd](args);
+                        if (result !== "OPEN_NANO_SIGNAL") {
+                            if (result !== null && result !== undefined) output.innerHTML += result + "\n\n";
+                        }
+                    } else {
+                        output.innerHTML += `<span class="error">bash: ${cmd}: comando não encontrado</span>\n\n`;
+                    }
+                } else {
+                    output.innerHTML += "\n";
+                }
+
+                wrapper.scrollTop = wrapper.scrollHeight;
+            }
+        });
+
+        // Evento para forçar a barra do Termux a se reajustar à Viewport Virtual se o teclado subir/mudar
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                document.body.style.height = window.visualViewport.height + 'px';
+                wrapper.scrollTop = wrapper.scrollHeight;
+            });
+        }
+
+        atualizarPrompt();
     </script>
 </body>
 </html>
