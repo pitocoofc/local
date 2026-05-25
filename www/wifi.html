@@ -150,10 +150,10 @@
     </div>
 
     <script>
-        // Avisa o OS que eu acabei de abrir e estou pronto
+        
 window.parent.postMessage({ type: 'IFRAME_LOADED' }, '*');
 
-// O seu listener que já existe continua igual:
+        
 window.addEventListener('message', (event) => {
     if (event.data.type === 'ACTIVATE_RUNET') {
         aplicarMascaraRussa();
@@ -163,9 +163,9 @@ window.addEventListener('message', (event) => {
         const CORRECT_PASSWORD = "1234"; // Defina a senha aqui
         let currentGasto = 25;
 
-        // --- LÓGICA DE CONEXÃO INTERATIVA ---
+        
         function connectToNetwork(newName, newIp) {
-            // Se já for a rede ativa, não faz nada
+            
             if (newName === document.getElementById('active-net-name').innerText) return;
 
             const password = prompt(`Insira a senha para "${newName}":`);
@@ -173,10 +173,10 @@ window.addEventListener('message', (event) => {
             if (password === CORRECT_PASSWORD) {
                 alert("Conectando...");
                 
-                // 1. Pega os dados antigos
+                
                 const oldName = document.getElementById('active-net-name').innerText;
 
-                // 2. Atualiza o Card Principal (Animação simples de troca)
+                
                 const card = document.getElementById('active-net-card');
                 card.style.opacity = '0.5';
                 
@@ -184,14 +184,14 @@ window.addEventListener('message', (event) => {
                     document.getElementById('active-net-name').innerText = newName;
                     document.getElementById('stat-ip').innerText = newIp;
                     
-                    // Reseta o gasto ao trocar de rede (simulação)
+                    
                     currentGasto = 0;
                     document.getElementById('stat-gasto').innerText = currentGasto;
 
-                    // 3. Move a rede antiga para a lista
+                    
                     addNetworkToList(oldName);
 
-                    // 4. Remove a nova rede da lista
+                    
                     removeNetworkFromList(newName);
 
                     card.style.opacity = '1';
@@ -202,14 +202,14 @@ window.addEventListener('message', (event) => {
             }
         }
 
-        // --- GESTÃO DINÂMICA DA LISTA ---
+        
         function addNetworkToList(name) {
             const list = document.getElementById('available-list');
             
-            // Cria o elemento HTML da rede antiga
+            
             const item = document.createElement('div');
             item.className = 'network-item';
-            // Se for a rede principal antiga, ela mantém o IP original simulado
+            
             item.onclick = () => connectToNetwork(name, '192.168.0.1');
             item.innerHTML = `
                 <div class="network-item-name">📶 ${name}</div>
@@ -231,26 +231,25 @@ window.addEventListener('message', (event) => {
             }
         }
 
-        // --- VELOCIDADES ALEATÓRIAS (CONSTANTE) ---
+
         function updateSpeeds() {
-            // Gera número aleatório entre 50 e 125
+            
             const up = Math.floor(Math.random() * (125 - 50 + 1)) + 50;
             const down = Math.floor(Math.random() * (125 - 50 + 1)) + 50;
 
             document.getElementById('stat-upload').innerText = up;
             document.getElementById('stat-download').innerText = down;
 
-            // Simula aumento de gasto de dados (pequeno acréscimo)
+            
             if (currentGasto < 75) {
-                currentGasto += (up + down) / 20000; // Simulação proporcional à velocidade
+                currentGasto += (up + down) / 20000; 
                 document.getElementById('stat-gasto').innerText = currentGasto.toFixed(2);
             }
         }
-        // Inicia o loop de velocidade (a cada 1 segundo)
+        
         setInterval(updateSpeeds, 1000);
-        updateSpeeds(); // Executa a primeira vez instantaneamente
-
-        // --- FUNÇÃO DO SWITCH ---
+        updateSpeeds(); 
+        
         function toggleWifiList(enabled) {
             const listArea = document.getElementById('wifi-list-area');
             const activeCard = document.getElementById('active-net-card');
@@ -269,7 +268,7 @@ window.addEventListener('message', (event) => {
                 document.getElementById('active-net-name').innerText = "Desativado";
             }
         }
-        // Listener para receber comandos de outros apps (como o Terminal)
+        
 window.addEventListener('message', (event) => {
     if (event.data.type === 'ACTIVATE_RUNET') {
         aplicarMascaraRussa();
@@ -281,7 +280,7 @@ function aplicarMascaraRussa() {
     const ipElem = document.getElementById('stat-ip');
     const card = document.getElementById('active-net-card');
     
-    // Animação de Glitch visual rápida
+    
     card.style.filter = 'hue-rotate(180deg) brightness(1.2)';
     
     setTimeout(() => {
@@ -289,13 +288,13 @@ function aplicarMascaraRussa() {
         ipElem.innerText = "95.161.226.13"; // IP de São Petersburgo, Rússia
         ipElem.style.color = "#ff4444";
         
-        // Adiciona um log interno se você tiver sistema de notificações
+        
         console.log("MÁSCARA DE IP ATIVA: Origem RU-VNET");
         card.style.filter = 'none';
     }, 500);
 }
 
-// Modifique sua função connectToNetwork para resetar a máscara
+       
 const originalConnect = connectToNetwork;
 connectToNetwork = function(newName, newIp) {
     // Se conectar a outra rede, o IP volta ao normal
