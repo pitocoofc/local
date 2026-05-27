@@ -5,91 +5,351 @@
     <script src="sys_config.js"></script>
     <style>
         body {
-            margin: 0; padding: 20px;
-            background: #111; color: #fff;
-            font-family: 'Segoe UI', sans-serif;
+            margin: 0; padding: 0;
+            background: #000; color: #fff;
+            font-family: 'Segoe UI', -apple-system, sans-serif;
             user-select: none;
+            overflow-x: hidden;
         }
-        h2 { border-bottom: 1px solid #333; padding-bottom: 10px; font-weight: 300; margin-top: 0; }
-        
-        .section { margin-bottom: 30px; }
-        .label { font-size: 11px; color: #3b82f6; text-transform: uppercase; margin-bottom: 10px; display: block; letter-spacing: 1px;}
 
-        /* Grid de Wallpapers */
-        .wp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .wp-item {
-            aspect-ratio: 16/9; background-size: cover; background-position: center;
-            border-radius: 8px; border: 2px solid transparent; cursor: pointer;
-            transition: 0.2s;
+        /* Header estilo Android Avançado */
+        .main-header {
+            padding: 30px 20px 10px;
+            background: #000;
         }
-        .wp-item:active { transform: scale(0.95); border-color: #3b82f6; }
+        .main-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 400;
+            letter-spacing: -0.5px;
+        }
 
-        /* Info do Dispositivo & Armazenamento */
-        .info-card { background: #222; padding: 15px; border-radius: 12px; border: 1px solid #333; font-size: 14px; }
-        .info-line { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        /* Barra de Busca Cinematográfica */
+        .search-container {
+            padding: 0 15px 15px;
+        }
+        .search-box {
+            width: 100%;
+            background: #1a1a1a;
+            border: 1px solid #222;
+            padding: 12px 15px;
+            border-radius: 14px;
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .search-box:focus {
+            border-color: #3b82f6;
+            background: #222;
+        }
+
+        /* Menu de Opções Android (Listas) */
+        .android-menu {
+            background: #111;
+            border-radius: 20px;
+            margin: 0 15px 20px;
+            overflow: hidden;
+            border: 1px solid #222;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #222;
+        }
+        .menu-item:last-child { border-bottom: none; }
+        .menu-item:active { background: #222; }
+
+        .menu-icon {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .menu-text { flex: 1; }
+        .menu-title { font-size: 15px; font-weight: 500; color: #fff; }
+        .menu-subtitle { font-size: 12px; color: #888; margin-top: 2px; }
+        .menu-arrow { color: #555; font-size: 14px; font-weight: bold; }
+
+        /* Paleta de Cores Expandida Android UI */
+        .bg-blue { background: #2563eb; }
+        .bg-purple { background: #7c3aed; }
+        .bg-green { background: #16a34a; }
+        .bg-orange { background: #ea580c; }
+        .bg-grey { background: #374151; }
+        .bg-red { background: #dc2626; }
+        .bg-teal { background: #0d9488; }
+        .bg-yellow { background: #ca8a04; }
+        .bg-pink { background: #db2777; }
+        .bg-lime { background: #65a30d; }
+        .bg-indigo { background: #4f46e5; }
+        .bg-cyan { background: #0891b2; }
+        .bg-darkdev { background: #2e1065; border: 1px solid #a78bfa; }
+
+        /* Container de Sub-páginas */
+        .sub-page {
+            position: fixed; inset: 0;
+            background: #111; z-index: 100;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto; padding: 20px;
+        }
+        .sub-page.active { transform: translateX(0); }
+
+        .sub-header {
+            display: flex; align-items: center;
+            margin-bottom: 25px; padding-bottom: 10px;
+            border-bottom: 1px solid #222;
+        }
+        .back-btn {
+            background: none; border: none; color: #3b82f6;
+            font-size: 20px; cursor: pointer; margin-right: 15px; padding: 5px;
+        }
+        .sub-header h2 { margin: 0; font-size: 20px; font-weight: 400; }
+
+        /* Estilização interna dos Cards de Info */
+        .info-card { background: #1a1a1a; padding: 15px; border-radius: 14px; border: 1px solid #222; font-size: 14px; margin-bottom: 15px; }
+        .info-header-title { font-size: 12px; color: #3b82f6; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px; }
+        .info-line { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; }
+        .info-line:last-child { margin-bottom: 0; }
         .info-value { color: #3b82f6; font-family: monospace; }
-        
         .ram-virtual { font-size: 10px; vertical-align: super; color: #a855f7; margin-left: 2px; }
 
+        /* Inputs, Sliders e Selects Nativos customizados */
+        .android-select {
+            background: #222; color: #fff; border: 1px solid #444; padding: 6px 10px; border-radius: 8px; font-size: 13px; outline: none; cursor: pointer;
+        }
+        .android-select:focus { border-color: #3b82f6; }
+        
+        .android-slider {
+            -webkit-appearance: none; width: 60%; height: 6px; background: #333; border-radius: 5px; outline: none;
+        }
+        .android-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #3b82f6; cursor: pointer;
+        }
+
+        /* Switches Estéticos (Android-like) */
+        .switch {
+            position: relative; display: inline-block; width: 40px; height: 24px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; inset: 0; background-color: #333;
+            transition: .3s; border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 16px; width: 16px;
+            left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #3b82f6; }
+        input:checked + .slider:before { transform: translateX(16px); }
+
+        /* Armazenamento */
         .storage-container { margin-top: 15px; }
         .storage-bar { 
-            height: 12px; width: 100%; background: #444; border-radius: 6px; 
+            height: 10px; width: 100%; background: #334; border-radius: 5px; 
             display: flex; overflow: hidden; margin-bottom: 8px;
         }
         .bar-os { background: #eab308; } 
         .bar-apps { background: #a855f7; }   
         .bar-files { background: #3b82f6; }  
-        
-        .storage-legend { display: flex; gap: 10px; font-size: 10px; color: #888; flex-wrap: wrap; }
-        .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 4px; }
+        .storage-legend { display: flex; flex-direction: column; gap: 6px; font-size: 11px; color: #aaa; margin-top: 10px; }
+        .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
 
-        /* Estilo dos Drivers */
-        .btn-group { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-        .driver-btn {
-            flex: 1; min-width: 120px; padding: 12px; background: #222; border: 1px solid #444;
-            color: #fff; border-radius: 8px; cursor: pointer; font-size: 13px;
-            transition: 0.3s;
+        /* Grid de Wallpapers */
+        .wp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .wp-item {
+            aspect-ratio: 16/9; background-size: cover; background-position: center;
+            border-radius: 10px; border: 2px solid transparent; cursor: pointer;
+            transition: 0.2s;
         }
-        .driver-btn:hover { background: #333; }
-        .driver-btn.primary { background: #3b82f6; border-color: #2563eb; }
-        .driver-btn.warning { border-color: #eab308; color: #eab308; font-weight: bold; }
-        .driver-btn.active-kernel { border: 1px solid #fff; background: #333; box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
+        .wp-item:active { transform: scale(0.95); border-color: #3b82f6; }
+
+        /* Botões */
+        .btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .driver-btn {
+            width: 100%; padding: 14px; background: #1a1a1a; border: 1px solid #222;
+            color: #fff; border-radius: 10px; cursor: pointer; font-size: 14px; text-align: left;
+            transition: 0.2s;
+        }
+        .driver-btn:active { background: #222; }
+        .driver-btn.primary { background: #3b82f6; border-color: #2563eb; text-align: center; font-weight: bold; }
+        .driver-btn.warning { border-color: #eab308; color: #eab308; font-weight: bold; text-align: center; }
+        .driver-btn.active-kernel { border: 1px solid #fff; background: #222; }
 
         #progress-container {
-            display: none; width: 100%; height: 8px; background: #222; 
-            border-radius: 4px; margin-top: 15px; overflow: hidden;
+            display: none; width: 100%; height: 6px; background: #222; 
+            border-radius: 3px; margin: 15px 0; overflow: hidden;
         }
         #progress-bar { width: 0%; height: 100%; background: #3b82f6; transition: width 0.1s; }
 
-        /* MODAL DE IMAGEM */
+        /* Modal Registro */
         #img-viewer {
             position: fixed; inset: 0; background: #000; z-index: 9999;
             display: none; align-items: center; justify-content: center;
         }
-        #img-viewer img {
-            max-width: 90%; max-height: 80%; border-radius: 4px;
-            animation: pulse-img 3s infinite ease-in-out;
-        }
-        @keyframes pulse-img {
-            0%, 100% { transform: scale(1); filter: brightness(1); }
-            50% { transform: scale(1.04); filter: brightness(1.2); }
-        }
+        #img-viewer img { max-width: 90%; max-height: 80%; border-radius: 8px; }
     </style>
 </head>
 <body>
 
-    <div id="img-viewer" onclick="this.style.display='none'">
-        <img src="135 Sem Título_20260519123340.png">
+    <div class="main-header">
+        <h1>Configurações</h1>
     </div>
 
-    <div class="section">
-        <span class="label">Sobre o Dispositivo</span>
-        <h2>Especificações</h2>
+    <div class="search-container">
+        <input type="text" class="search-box" id="menuSearch" placeholder="Pesquisar configurações..." oninput="filtrarMenus()">
+    </div>
+
+    <div class="android-menu" id="mainMenuContainer">
+        <div class="menu-item" onclick="openSubPage('page-device')" data-search="sobre o dispositivo especificações cpu ram armazenamento hardware">
+            <div class="menu-icon bg-blue">📱</div>
+            <div class="menu-text">
+                <div class="menu-title">Sobre o Dispositivo</div>
+                <div class="menu-subtitle">Especificações, CPU, RAM e Armazenamento</div>
+            </div>
+            <div class="menu-arrow">❯</div>
+        </div>
+
+        <div class="menu-item" onclick="openSubPage('page-wallpaper')" data-search="papel de parede personalizar plano de fundo tela imagem">
+            <div class="menu-icon bg-purple">✨</div>
+            <div class="menu-text">
+                <div class="menu-title">Papel de Parede</div>
+                <div class="menu-subtitle">Personalizar plano de fundo da tela</div>
+            </div>
+            <div class="menu-arrow">❯</div>
+        </div>
+
+        <div class="menu-item" onclick="openSubPage('page-connections')" data-search="conexões redes wi-fi redes móveis dns bluetooth ip local">
+            <div class="menu-icon bg-teal">📶</div>
+            <div class="menu-text">
+                <div class="menu-title">Conexões & Redes</div>
+                <div class="menu-subtitle">Wi-Fi, Redes Móveis, DNS e Bluetooth</div>
+            </div>
+            <div class="menu-arrow">❯</div>
+        </div>
+
+        <div class="menu-item" onclick="openSubPage('page-display')" data-search="tela brilho modo escuro taxa de atualização hz dpi filtro luz azul">
+            <div class="menu-icon bg-yellow">☀️</div>
+            <div class="menu-text">
+                <div class="menu-title">Tela & Brilho</div>
+                <div class="menu-subtitle">Modo escuro, Taxa de Atualização (Hz) e DPI</div>
+            </div>
+            <div class="menu-arrow">❯</div>
+        </div>
+
+        <div class="menu-item" onclick="openSubPage('page-audio')" data-search="som vibração codec ldac aptx dolby atmos volume áudio">
+            <div class="menu-icon bg-indigo">🔊</div>
+            <div class="menu-text">
+                <div class="menu-title">Som & Vibração</div>
+                <div class="menu-subtitle">Codecs de áudio, Dolby Atmos e Perfis</div>
+            </div>
+            <div class="menu-arrow">❯</div>
+        </div>
+
+        <div class="menu-item" onclick="openSubPage('page-battery')" data-search="bateria desempenho térmico energia otimização carga amostragem">
+            <div class="menu-icon bg-lime">🔋</div>
+            <div class="menu-text">
+                <div class="menu-title">Bateria & Desempenho</div>
+                <div class="menu-subtitle">Ciclos, gerenciamento térmico e limites</div>
+            </div>
+            <div class="menu-arrow">❯</div>
+        </div>
+
+        <div class="menu-item" onclick="openSubPage('page-camera')" data-search="subsistema câmera resolução apis captura renderização hal sensor">
+            <div class="menu-icon bg-pink">📷</div>
+            <div class="menu-text">
+                <div class="menu-title">Subsistema de Câmera</div>
+                <div class="menu-subtitle">Resolução, APIs de captura e renderização</div>
+            </div>
+            <div class="menu-arrow">❯</div>
+        </div>
+
+        <div class="menu-item" onclick="openSubPage('page-notifications')" data-search="notificações status barra bolhas popups prioridade">
+            <div class="menu-icon bg-cyan">🔔</div>
+            <div class="menu-text">
+                <div class="menu-title">Notificações & Status</div>
+                <div class="menu-subtitle">Histórico, bolhas e ícones da barra</div>
+            </div>
+            <div class="menu-arrow">❯</div>
+        </div>
+
+        <div class="menu-item" onclick="openSubPage('page-apps')" data-search="aplicativos containers sandbox cache permissões ram gerenciador">
+            <div class="menu-icon bg-purple">📦</div>
+            <div class="menu-text">
+                <div class="menu-title">Aplicativos & Containers</div>
+                <div class="menu-subtitle">Gerenciar permissões, sandbox e cache</div>
+            </div>
+            <div class="menu-arrow">❯</div>
+        </div>
+
+        <div class="menu-item" onclick="openSubPage('page-security')" data-search="segurança privacidade criptografia kernel sandbox selinux biometria">
+            <div class="menu-icon bg-red">🛡️</div>
+            <div class="menu-text">
+                <div class="menu-title">Segurança & Privacidade</div>
+                <div class="menu-subtitle">Criptografia do Kernel, Sandbox e Proteção</div>
+            </div>
+            <div class="menu-arrow">❯</div>
+        </div>
+
+        <div class="menu-item" onclick="openSubPage('page-drivers')" data-search="hardware subsistema drivers vídeo rede overclock kernel">
+            <div class="menu-icon bg-green">⚙️</div>
+            <div class="menu-text">
+                <div class="menu-title">Hardware & Subsistema</div>
+                <div class="menu-subtitle">Gerenciar drivers de vídeo e rede</div>
+            </div>
+            <div class="menu-arrow">❯</div>
+        </div>
+
+        <div class="menu-item" onclick="openSubPage('page-boot')" data-search="configurações boot alternar kernel bios ghostos">
+            <div class="menu-icon bg-orange">⚡</div>
+            <div class="menu-text">
+                <div class="menu-title">Configurações de Boot</div>
+                <div class="menu-subtitle">Alternar entre Kernel e BIOS</div>
+            </div>
+            <div class="menu-arrow">❯</div>
+        </div>
+
+        <div class="menu-item" onclick="openSubPage('page-system')" data-search="sistema versão desenvolvedor logs secretos build estável ndj-lib">
+            <div class="menu-icon bg-grey">ℹ️</div>
+            <div class="menu-text">
+                <div class="menu-title">Sistema</div>
+                <div class="menu-subtitle">Versão, desenvolvedor e logs secretos</div>
+            </div>
+            <div class="menu-arrow">❯</div>
+        </div>
+
+        <div class="menu-item" id="dev-menu-item" onclick="openSubPage('page-developer')" data-search="opções desenvolvedor depuração sandbox memória tweaks depuração">
+            <div class="menu-icon bg-darkdev">🛠️</div>
+            <div class="menu-text">
+                <div class="menu-title" style="color: #a78bfa; font-weight: bold;">Opções do Desenvolvedor</div>
+                <div class="menu-subtitle">Depuração, sandbox de memória e tweaks avançados</div>
+            </div>
+            <div class="menu-arrow" style="color: #a78bfa;">❯</div>
+        </div>
+    </div>
+
+
+    <div id="page-device" class="sub-page">
+        <div class="sub-header">
+            <button class="back-btn" onclick="closeSubPage()">🡨</button>
+            <h2>Especificações</h2>
+        </div>
         <div class="info-card">
+            <div class="info-header-title">Processamento & Memória</div>
             <div class="info-line"><span>Processador:</span> <span class="info-value" id="cpu-name">---</span></div>
             <div class="info-line"><span>Memória RAM:</span> <span><span id="ram-base">0</span>GB<span class="ram-virtual" id="ram-v">+0</span></span></div>
+            <div class="info-line"><span>Arquitetura da CPU:</span> <span class="info-value">AArch64 (ARMv9-A)</span></div>
             
             <div class="storage-container">
+                <div class="info-header-title">Mapeamento de Armazenamento</div>
                 <div class="info-line"><span>Armazenamento:</span> <span><span id="storage-used">0</span>GB / <span id="storage-total">0</span>GB</span></div>
                 <div class="storage-bar">
                     <div class="bar-os" id="bar-os-w"></div>
@@ -105,76 +365,475 @@
         </div>
     </div>
 
-    <div class="section">
-        <span class="label">Personalização</span>
-        <h2>Papel de Parede</h2>
+    <div id="page-wallpaper" class="sub-page">
+        <div class="sub-header">
+            <button class="back-btn" onclick="closeSubPage()">🡨</button>
+            <h2>Papel de Parede</h2>
+        </div>
         <div class="wp-grid">
             <div class="wp-item" style="background-image: url('https://www.opovo.com.br/_midias/jpg/2026/02/09/800x600/1_fase_lua_minguante_11_fevereiro_2026-39299104.jpg');" 
                  onclick="changeWP('https://www.opovo.com.br/_midias/jpg/2026/02/09/800x600/1_fase_lua_minguante_11_fevereiro_2026-39299104.jpg')"></div>
-            
             <div class="wp-item" style="background-image: url('https://w.wallhaven.cc/full/j3/wallhaven-j3m8p6.png');" 
                  onclick="changeWP('https://w.wallhaven.cc/full/j3/wallhaven-j3m8p6.png')"></div>
-            
             <div class="wp-item" style="background-image: url('https://w.wallhaven.cc/full/ox/wallhaven-oxv699.jpg');" 
                  onclick="changeWP('https://w.wallhaven.cc/full/ox/wallhaven-oxv699.jpg')"></div>
-            
             <div class="wp-item" style="background-image: url('https://w.wallhaven.cc/full/gp/wallhaven-gpl9ve.jpg');" 
                  onclick="changeWP('https://w.wallhaven.cc/full/gp/wallhaven-gpl9ve.jpg')"></div>
-
-<div class="wp-item" onclick="document.getElementById('fileInput').click()" style="display:flex;align-items:center;justify-content:center;background:#222;font-size:24px;">
-    +
-</div>
-<input id="fileInput" type="file" accept="image/*" onchange="uploadWallpaper(event)" hidden>
-
+            <div class="wp-item" onclick="document.getElementById('fileInput').click()" style="display:flex;align-items:center;justify-content:center;background:#222;font-size:24px;">+</div>
+            <input id="fileInput" type="file" accept="image/*" onchange="uploadWallpaper(event)" hidden>
         </div>
     </div>
 
-    <div class="section">
-        <span class="label">Hardware & Subsistema</span>
-        <h2>Drivers de Dispositivo</h2>
+    <div id="page-connections" class="sub-page">
+        <div class="sub-header">
+            <button class="back-btn" onclick="closeSubPage()">🡨</button>
+            <h2>Conexões & Redes</h2>
+        </div>
         <div class="info-card">
+            <div class="info-header-title">Rádio & Antenas</div>
+            <div class="info-line">
+                <div><span>Rede Wi-Fi Simulação</span><br><small style="color:#666" id="wifi-status-txt">Conectado (IP: 192.168.1.45)</small></div>
+                <label class="switch"><input type="checkbox" id="switch-wifi" checked onchange="toggleWifi()"><span class="slider"></span></label>
+            </div>
+            <div class="info-line" style="margin-top:15px">
+                <div><span>Bluetooth v5.2</span><br><small style="color:#666">Visível para dispositivos próximos</small></div>
+                <label class="switch"><input type="checkbox" id="switch-bt" onchange="salvarConfigGenerica('bt_status', this.checked)"><span class="slider"></span></label>
+            </div>
+            <div class="info-line" style="margin-top:15px">
+                <div><span>Modo Avião</span><br><small style="color:#666">Desativar todas as emissões RF</small></div>
+                <label class="switch"><input type="checkbox" id="switch-airplane" onchange="salvarConfigGenerica('airplane_mode', this.checked)"><span class="slider"></span></label>
+            </div>
+        </div>
+        <div class="info-card">
+            <div class="info-header-title">Configurações de Encaminhamento</div>
+            <div class="info-line">
+                <span>Modo de Rede Móvel</span>
+                <select class="android-select" onchange="dispararNotificacao('Rede', 'Buscando torre de transmissão local...', '📶')">
+                    <option>Forçar LTE / 5G Nativos</option>
+                    <option>Apenas 4G/3G (Economia)</option>
+                    <option>Modo Satélite Simulado</option>
+                </select>
+            </div>
+            <div class="info-line" style="margin-top:12px">
+                <span>DNS Privado Seguro</span>
+                <select class="android-select" onchange="salvarConfigGenerica('dns_mode', this.value)">
+                    <option>Desativado (Automático)</option>
+                    <option>dns.google</option>
+                    <option>1.1.1.1 Cloudflare</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-display" class="sub-page">
+        <div class="sub-header">
+            <button class="back-btn" onclick="closeSubPage()">🡨</button>
+            <h2>Tela & Brilho</h2>
+        </div>
+        <div class="info-card">
+            <div class="info-header-title">Controle de Iluminação</div>
+            <div class="info-line">
+                <span>Brilho do Painel</span>
+                <input type="range" class="android-slider" min="0" max="100" value="85" onchange="salvarConfigGenerica('brilho_valor', this.value)">
+            </div>
+            <div class="info-line" style="margin-top:15px">
+                <div><span>Brilho Adaptável</span><br><small style="color:#666">Ajustar conforme o sensor de luz</small></div>
+                <label class="switch"><input type="checkbox" checked onchange="salvarConfigGenerica('brilho_auto', this.checked)"><span class="slider"></span></label>
+            </div>
+        </div>
+        <div class="info-card">
+            <div class="info-header-title">Taxa & Renderização</div>
+            <div class="info-line">
+                <span>Frequência do Painel</span>
+                <select id="select-hz" class="android-select" onchange="alterarHz(this.value)">
+                    <option value="60">Estável (60 Hz)</option>
+                    <option value="90">Fluido (90 Hz)</option>
+                    <option value="120">Ultra Performance (120 Hz)</option>
+                    <option value="144">Gaming Mode (144 Hz)</option>
+                    <option value="dynamic">Dinâmico Automatizado</option>
+                </select>
+            </div>
+            <div class="info-line" style="margin-top:15px">
+                <span>Densidade do Display (DPI Mínimo)</span>
+                <select class="android-select" onchange="dispararNotificacao('Display', 'Buffer de proporções reconstruído.', '📐')">
+                    <option>360 dpi (Padrão)</option>
+                    <option>411 dpi (Compacto)</option>
+                    <option>480 dpi (Desenvolvedor)</option>
+                    <option>600 dpi (Modo Tablet)</option>
+                </select>
+            </div>
+        </div>
+        <div class="info-card">
+            <div class="info-header-title">Conforto Visual</div>
+            <div class="info-line">
+                <div><span>Filtro de Luz Azul</span><br><small style="color:#666">Matiz âmbar para descanso dos olhos</small></div>
+                <label class="switch"><input type="checkbox" onchange="salvarConfigGenerica('luz_azul', this.checked)"><span class="slider"></span></label>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-audio" class="sub-page">
+        <div class="sub-header">
+            <button class="back-btn" onclick="closeSubPage()">🡨</button>
+            <h2>Som & Vibração</h2>
+        </div>
+        <div class="info-card">
+            <div class="info-header-title">Processamento Espacial</div>
+            <div class="info-line">
+                <div><span>Dolby Atmos® Digital</span><br><small style="color:#666">Surround espacial de 360 graus</small></div>
+                <label class="switch"><input type="checkbox" id="switch-dolby" onchange="salvarConfigGenerica('dolby_atmos', this.checked)"><span class="slider"></span></label>
+            </div>
+        </div>
+        <div class="info-card">
+            <div class="info-header-title">Transmissão Sem Fio Bluetooth</div>
+            <div class="info-line">
+                <span>Codec de Áudio Nativo</span>
+                <select class="android-select" onchange="salvarConfigGenerica('audio_codec', this.value)">
+                    <option>SBC (Padrão de Baixo Custo)</option>
+                    <option>AAC (Otimizado Mídia)</option>
+                    <option>Qualcomm® aptX™ Adaptive</option>
+                    <option>Sony LDAC (990kbps Hi-Res)</option>
+                </select>
+            </div>
+        </div>
+        <div class="info-card">
+            <div class="info-header-title">Resposta Háptica</div>
+            <div class="info-line">
+                <span>Intensidade da Vibração</span>
+                <input type="range" class="android-slider" min="0" max="100" value="70" onchange="salvarConfigGenerica('vibe_power', this.value)">
+            </div>
+        </div>
+    </div>
+
+    <div id="page-battery" class="sub-page">
+        <div class="sub-header">
+            <button class="back-btn" onclick="closeSubPage()">🡨</button>
+            <h2>Bateria</h2>
+        </div>
+        <div class="info-card">
+            <div class="info-header-title">Célula de Energia</div>
+            <div class="info-line"><span>Carga Atual:</span> <span style="color:#4ade80; font-weight:bold;">94%</span></div>
+            <div class="info-line"><span>Temperatura do Módulo:</span> <span class="info-value">31.4°C (Normal)</span></div>
+            <div class="info-line"><span>Saúde do Componente:</span> <span style="color:#4ade80">100% (Excelente)</span></div>
+        </div>
+        <div class="info-card">
+            <div class="info-header-title">Preservação & Perfis</div>
+            <div class="info-line">
+                <span>Perfil Energético do Kernel</span>
+                <select class="android-select" onchange="dispararNotificacao('Kernel Power', 'Perfil de ciclos do processador reajustado.', '🔋')">
+                    <option>Equilibrado (Recomendado)</option>
+                    <option>Economia Extrema de Energia</option>
+                    <option>Alta Performance (Clock Máximo)</option>
+                </select>
+            </div>
+            <div class="info-line" style="margin-top:15px">
+                <div><span>Proteger Bateria</span><br><small style="color:#666">Limitar a carga máxima em 85%</small></div>
+                <label class="switch"><input type="checkbox" onchange="salvarConfigGenerica('protect_batt', this.checked)"><span class="slider"></span></label>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-camera" class="sub-page">
+        <div class="sub-header">
+            <button class="back-btn" onclick="closeSubPage()">🡨</button>
+            <h2>Subsistema de Câmera</h2>
+        </div>
+        <div class="info-card">
+            <div class="info-header-title">Captação Física</div>
+            <div class="info-line">
+                <span>Resolução do Sensor Traseiro</span>
+                <select class="android-select" onchange="salvarConfigGenerica('cam_res', this.value)">
+                    <option>64 MP (Ultra High Res)</option>
+                    <option>16 MP (Pixel Binning Ativo)</option>
+                    <option>1080p Stream Puro</option>
+                </select>
+            </div>
+            <div class="info-line" style="margin-top:15px">
+                <span>HAL da Câmera (API Interna)</span>
+                <select class="android-select" onchange="dispararNotificacao('Câmera', 'Subsistema HAL Reiniciado.', '📷')">
+                    <option>Camera2 API (Full Mode)</option>
+                    <option>Legacy Android API</option>
+                    <option>Ghost Camera Engine V3</option>
+                </select>
+            </div>
+        </div>
+        <div class="info-card">
+            <div class="info-header-title">Pós-Processamento</div>
+            <div class="info-line">
+                <div><span>Estabilização Óptica (OIS)</span><br><small style="color:#666">Prevenir tremores via giroscópio virtual</small></div>
+                <label class="switch"><input type="checkbox" checked onchange="salvarConfigGenerica('cam_ois', this.checked)"><span class="slider"></span></label>
+            </div>
+            <div class="info-line" style="margin-top:15px">
+                <div><span>Gravação de Logs de Frame</span><br><small style="color:#666">Dump de frames no cache de mídia</small></div>
+                <label class="switch"><input type="checkbox" onchange="salvarConfigGenerica('cam_log', this.checked)"><span class="slider"></span></label>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-notifications" class="sub-page">
+        <div class="sub-header">
+            <button class="back-btn" onclick="closeSubPage()">🡨</button>
+            <h2>Notificações & Status</h2>
+        </div>
+        <div class="info-card">
+            <div class="info-header-title">Barra de Status Superior</div>
+            <div class="info-line">
+                <div><span>Exibir Porcentagem de Bateria</span></div>
+                <label class="switch"><input type="checkbox" checked onchange="salvarConfigGenerica('show_battery_pct', this.checked)"><span class="slider"></span></label>
+            </div>
+            <div class="info-line" style="margin-top:15px">
+                <div><span>Velocidade de Rede em Tempo Real</span></div>
+                <label class="switch"><input type="checkbox" onchange="salvarConfigGenerica('show_net_speed', this.checked)"><span class="slider"></span></label>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-apps" class="sub-page">
+        <div class="sub-header">
+            <button class="back-btn" onclick="closeSubPage()">🡨</button>
+            <h2>Aplicativos</h2>
+        </div>
+        <div class="info-card">
+            <div class="info-header-title">Uso de Recursos</div>
+            <div class="info-line"><span>Aplicações Instaladas:</span> <span class="info-value">12 Apps Virtuais</span></div>
+            <div class="info-line"><span>Processos em Execução:</span> <span class="info-value">4 Background Tasks</span></div>
+        </div>
+        <div class="info-card">
+            <div class="info-header-title">Ações Rápidas de Manutenção</div>
+            <button class="driver-btn" onclick="dispararNotificacao('Sistema', 'Todos os arquivos de cache temporários foram limpos.', '🗑️')" style="text-align: center; color: #a855f7;">Limpar Cache Global do Sistema</button>
+        </div>
+    </div>
+
+    <div id="page-security" class="sub-page">
+        <div class="sub-header">
+            <button class="back-btn" onclick="closeSubPage()">🡨</button>
+            <h2>Segurança & Privacidade</h2>
+        </div>
+        <div class="info-card">
+            <div class="info-header-title">Segurança de Baixo Nível</div>
+            <div class="info-line"><span>Criptografia do Disco Virtual</span><span style="color:#4ade80">AES-256 ATIVA</span></div>
+            <div class="info-line" style="margin-top:10px"><span>Estado do SELinux</span><span style="color:#4ade80">Enforcing (Estrito)</span></div>
+        </div>
+        <div class="info-card">
+            <div class="info-header-title">Módulos Biométricos</div>
+            <div class="info-line">
+                <div><span>Biometria Simulada</span><br><small style="color:#666">Validar impressões digitais na tela</small></div>
+                <label class="switch"><input type="checkbox" checked onchange="salvarConfigGenerica('biometria', this.checked)"><span class="slider"></span></label>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-drivers" class="sub-page">
+        <div class="sub-header">
+            <button class="back-btn" onclick="closeSubPage()">🡨</button>
+            <h2>Drivers de Dispositivo</h2>
+        </div>
+        <div class="info-card" style="margin-bottom: 15px;">
+            <div class="info-header-title">Núcleos Ativos</div>
             <div class="info-line"><span>Driver de Vídeo:</span> <span id="v-status">OFF</span></div>
             <div class="info-line"><span>Driver de Rede (Ndj):</span> <span id="n-status">OFF</span></div>
         </div>
-        
         <div id="progress-container"><div id="progress-bar"></div></div>
-
         <div class="btn-group">
-            <button class="driver-btn" onclick="installDrivers('essentials')">Essenciais</button>
-            <button class="driver-btn primary" onclick="installDrivers('full')">Baixar Todos</button>
-            <button class="driver-btn warning" onclick="wtd()">Overclock</button>
+            <button class="driver-btn" onclick="installDrivers('essentials')">⚡ Instalar Essenciais</button>
+            <button class="driver-btn" onclick="installDrivers('full')">📦 Baixar Pacote Completo</button>
+            <button class="driver-btn warning" onclick="wtd()">⚠️ Ativar Overclock</button>
         </div>
     </div>
 
-    <div class="section">
-        <span class="label">Configurações de Boot</span>
-        <h2>Trocar de Sistema (Kernel)</h2>
+    <div id="page-boot" class="sub-page">
+        <div class="sub-header">
+            <button class="back-btn" onclick="closeSubPage()">🡨</button>
+            <h2>Trocar Sistema (Kernel)</h2>
+        </div>
         <div class="btn-group">
             <button id="btn-future" class="driver-btn" onclick="setKernel('os.html')">GhostOS Future</button>
-            <button id="btn-nexo" class="driver-btn" onclick="setKernel('os2.html')">BIOS</button>
+            <button id="btn-nexo" class="driver-btn" onclick="setKernel('os2.html')">BIOS Setup</button>
         </div>
     </div>
 
-    <div class="section">
-        <span class="label">Sistema</span>
+    <div id="page-system" class="sub-page">
+        <div class="sub-header">
+            <button class="back-btn" onclick="closeSubPage()">🡨</button>
+            <h2>Informações Gerais</h2>
+        </div>
         <div class="info-card">
-            <div class="info-line"><span>Versão:</span> <span>6.0.0</span></div>
+            <div class="info-header-title">Build & Assinatura</div>
+            <div class="info-line" onclick="cliqueVersao()" style="cursor:pointer; padding: 10px 0;">
+                <span>Versão do OS:</span> <span class="info-value">6.0.0 (Build Stable)</span>
+            </div>
             <div class="info-line"><span>Desenvolvedor:</span> <span>Ghost</span></div>
             <div class="info-line"><span>Repositório:</span> <span>Ndj-lib</span></div>
-            <div style="margin-top: 15px; border-top: 1px solid #333; padding-top: 10px;">
+            
+            <div id="dev-progress-card" style="margin-top:10px; padding:10px; background:#222; border-radius:8px; display:none; text-align:center;">
+                <span style="font-size:12px; color:#a78bfa;">Passos de depuração registrados: <strong id="dev-clique-num">0</strong> / 7</span>
+            </div>
+
+            <div style="margin-top: 15px; border-top: 1px solid #333; padding-top: 10px; text-align: center;">
                 <span onclick="document.getElementById('img-viewer').style.display='flex'" style="color: #3b82f6; cursor: pointer; font-size: 13px;">[ VER ARQUIVO DE REGISTRO ]</span>
             </div>
         </div>
     </div>
 
+    <div id="page-developer" class="sub-page">
+        <div class="sub-header">
+            <button class="back-btn" onclick="closeSubPage()">🡨</button>
+            <h2 style="color:#a78bfa">Opções do Desenvolvedor</h2>
+        </div>
+        <div class="info-card">
+            <div class="info-header-title">Depuração e Logs</div>
+            <div class="info-line">
+                <div><span>Depuração Mock (postMessage)</span><br><small style="color:#666">Registrar logs de Toasts no Console</small></div>
+                <label class="switch"><input type="checkbox" id="dev-switch-debug" onchange="salvarOpcoesDev()"><span class="slider"></span></label>
+            </div>
+            <div class="info-line" style="margin-top:15px">
+                <div><span>Ignorar Trava de Overclock</span><br><small style="color:#666">Forçar clock sem checar limite térmico</small></div>
+                <label class="switch"><input type="checkbox" id="dev-switch-bypass" onchange="salvarOpcoesDev()"><span class="slider"></span></label>
+            </div>
+        </div>
+        <div class="info-card">
+            <div class="info-header-title">Renderização Avançada</div>
+            <div class="info-line">
+                <span>Escala de Animação Virtual</span>
+                <select class="android-select" onchange="dispararNotificacao('Dev Window', 'Janelas renderizadas em velocidade modificada', '📈')">
+                    <option>Escala de animação 1.0x</option>
+                    <option>Escala de animação 0.5x (Rápido)</option>
+                    <option>Animações Desativadas</option>
+                </select>
+            </div>
+            <div class="info-line" style="margin-top:15px">
+                <span>Forçar 4x MSAA</span>
+                <label class="switch"><input type="checkbox" onchange="salvarConfigGenerica('dev_msaa', this.checked)"><span class="slider"></span></label>
+            </div>
+        </div>
+        <div class="info-card" style="border-color:#dc2626;" onclick="resetarModoDev()">
+            <div class="info-line" style="color:#dc2626; justify-content:center; font-weight:bold; cursor:pointer;">
+                <span>DESATIVAR MODO DESENVOLVEDOR</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="img-viewer" onclick="this.style.display='none'">
+        <img src="135 Sem Título_20260519123340.png">
+    </div>
+
+
     <script>
-        function dispararNotificacao(titulo, mensagem, icone = '🔔') {
-    window.parent.postMessage({
-        type: 'SHOW_TOAST',
-        title: titulo,
-        message: mensagem,
-        icon: icone
-    }, '*');
+        let cliquesVersaoContador = 0;
+
+        // Mecânica de Filtragem e Busca Dinâmica
+        function filtrarMenus() {
+            const query = document.getElementById('menuSearch').value.toLowerCase();
+            const items = document.querySelectorAll('#mainMenuContainer .menu-item');
+            
+            items.forEach(item => {
+                const searchTags = item.getAttribute('data-search') || '';
+                const title = item.querySelector('.menu-title').innerText.toLowerCase();
+                const subtitle = item.querySelector('.menu-subtitle').innerText.toLowerCase();
+                
+                if (title.includes(query) || subtitle.includes(query) || searchTags.includes(query)) {
+                    item.style.display = 'flex';
+                } else {
+                    // Garantir que o item de desenvolvedor respeite seu próprio estado de visibilidade
+                    if (item.id === 'dev-menu-item' && localStorage.getItem('modo_developer') !== 'true') {
+                        item.style.display = 'none';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        // Funções de Navegação
+        function openSubPage(id) {
+            document.getElementById(id).classList.add('active');
+        }
+        function closeSubPage() {
+            const pages = document.querySelectorAll('.sub-page');
+            pages.forEach(page => page.classList.remove('active'));
+        }
+
+        // Sistema Inter-Processos de Notificações
+        function dispararNotificacao(titulo, message, icone = '🔔') {
+            window.parent.postMessage({
+                type: 'SHOW_TOAST',
+                title: titulo,
+                message: message,
+                icon: icone
+            }, '*');
+        }
+
+        function salvarConfigGenerica(chave, valor) {
+            localStorage.setItem(`sys_cfg_${chave}`, valor);
+        }
+
+        function toggleWifi() {
+            const status = document.getElementById('switch-wifi').checked;
+            salvarConfigGenerica('wifi_status', status);
+            document.getElementById('wifi-status-txt').innerText = status ? "Conectado (IP: 192.168.1.45)" : "Desconectado";
+            dispararNotificacao('Rede', status ? 'Conectado à sub-rede virtual.' : 'Modem de rádio desligado.', '📶');
+        }
+
+        function alterarHz(valor) {
+            salvarConfigGenerica('screen_hz', valor);
+            dispararNotificacao('Display', `Taxa mudada para ${valor}Hz com sucesso.`, '☀️');
+        }
+
+        // Sistema Cinematográfico de Cliques do Modo Dev (Idêntico ao Android Original)
+        function cliqueVersao() {
+            if (localStorage.getItem('modo_developer') === 'true') {
+                dispararNotificacao('Modo Dev', 'Você já é um desenvolvedor do GhostOS!', '🛠️');
+                return;
+            }
+
+            cliquesVersaoContador++;
+            let faltam = 7 - cliquesVersaoContador;
+
+            // Ativa o contador na interface
+            const progressCard = document.getElementById('dev-progress-card');
+            const progressNum = document.getElementById('dev-clique-num');
+            if(progressCard) {
+                progressCard.style.display = 'block';
+                progressNum.innerText = cliquesVersaoContador;
+            }
+
+            if (faltam > 0 && faltam <= 4) {
+                dispararNotificacao('Modo Dev', `Você está a ${faltam} passos de se tornar um desenvolvedor.`, '🛠️');
+            } else if (faltam === 0) {
+                localStorage.setItem('modo_developer', 'true');
+                verificarModoDev();
+                if(progressCard) progressCard.style.display = 'none';
+                dispararNotificacao('Sucesso', 'Você agora é um desenvolvedor!', '🚀');
+                closeSubPage();
+            }
+        }
+
+        function verificarModoDev() {
+            const isDev = localStorage.getItem('modo_developer') === 'true';
+            document.getElementById('dev-menu-item').style.display = isDev ? 'flex' : 'none';
+            
+            if(isDev) {
+                document.getElementById('dev-switch-debug').checked = localStorage.getItem('dev_debug') === 'true';
+                document.getElementById('dev-switch-bypass').checked = localStorage.getItem('dev_bypass') === 'true';
+            }
+        }
+
+        function salvarOpcoesDev() {
+            localStorage.setItem('dev_debug', document.getElementById('dev-switch-debug').checked);
+            localStorage.setItem('dev_bypass', document.getElementById('dev-switch-bypass').checked);
+            dispararNotificacao('Modo Dev', 'Configurações de engenharia injetadas no registro local.', '💾');
+        }
+
+        function resetarModoDev() {
+            localStorage.removeItem('modo_developer');
+            localStorage.removeItem('dev_debug');
+            localStorage.removeItem('dev_bypass');
+            cliquesVersaoContador = 0;
+            const progressCard = document.getElementById('dev-progress-card');
+            if(progressCard) progressCard.style.display = 'none';
+            verificarModoDev();
+            dispararNotificacao('Modo Dev', 'Opções do desenvolvedor apagadas.', '🗑️');
+            closeSubPage();
         }
         
         function applyConfig() {
@@ -193,15 +852,22 @@
                 document.getElementById('bar-apps-w').style.width = (s.apps_weight / s.storage_total * 100) + "%";
                 document.getElementById('bar-files-w').style.width = (fileW / s.storage_total * 100) + "%";
             }
+
+            // Resgatar estados prévios de configuração
+            const savedHz = localStorage.getItem('sys_cfg_screen_hz') || '60';
+            document.getElementById('select-hz').value = savedHz;
+
             updateKernelUI();
+            verificarModoDev();
         }
 
         window.onload = applyConfig;
 
+        // Controle de Subsistemas e Drivers de Boot
         function setKernel(file) {
             localStorage.setItem("selected_os", file);
             updateKernelUI();
-            if(confirm("Abrir o BIOS ou ativar o OS principal?")) {
+            if(confirm("Reiniciar barramento para aplicar as modificações no Kernel?")) {
                 window.top.location.href = "login.html";
             }
         }
@@ -235,54 +901,43 @@
 
         function completeInstallation(mode) {
             if (mode === 'essentials') {
-                
-// Exemplos de como você pode chamar ela no seu app:
-dispararNotificacao('Drivers', 'Drivers atualizados', '⚙️');
-                
                 parent.driver_video = "on";
                 document.getElementById('v-status').innerText = "ON";
                 document.getElementById('v-status').style.color = "#4ade80";
+                dispararNotificacao('Drivers', 'Drivers essenciais instalados!', '⚙️');
             } else {
-                dispararNotificacao('Drivers', 'Drivers atualizados', '⚙️');
-                
                 parent.driver_video = "on";
                 parent.driver_ndj = "on";
                 document.getElementById('v-status').innerText = "ON";
                 document.getElementById('n-status').innerText = "ON";
                 document.getElementById('v-status').style.color = "#4ade80";
                 document.getElementById('n-status').style.color = "#4ade80";
+                dispararNotificacao('Drivers', 'Todos os drivers do sistema estão ativos.', '🛡️');
             }
-            dispararNotificacao('Drivers', 'Finalizado', '⚙️');
-
+            dispararNotificacao('Kernel', 'Sincronização de Hardware concluída', '🧠');
             document.getElementById('progress-container').style.display = 'none';
         }
 
         function wtd() {
             window.location.href = "overclock.html";
         }
-function uploadWallpaper(event) {
-    const file = event.target.files[0];
-    if (!file) return;
 
-    const reader = new FileReader();
+        function uploadWallpaper(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                localStorage.setItem("custom_wallpaper", base64);
+                changeWP(base64);
+            };
+            reader.readAsDataURL(file);
+        }
 
-    reader.onload = function(e) {
-        const base64 = e.target.result;
-
-        // salva no sistema
-        localStorage.setItem("custom_wallpaper", base64);
-
-        // aplica imediatamente
-        changeWP(base64);
-    };
-
-    reader.readAsDataURL(file);
-}
-
-const savedWP = localStorage.getItem("custom_wallpaper");
-if (savedWP) {
-    changeWP(savedWP);
-}
+        const savedWP = localStorage.getItem("custom_wallpaper");
+        if (savedWP) {
+            changeWP(savedWP);
+        }
     </script>
 </body>
 </html>
