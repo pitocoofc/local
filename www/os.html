@@ -216,6 +216,83 @@
         align-content: start;
     }
 
+    /* --- NOVO: SISTEMA DE NOTIFICAÇÕES (TOASTS) --- */
+    #notification-container {
+        position: fixed;
+        top: 35px; /* Fica logo abaixo da status bar */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 400px;
+        z-index: 9999; /* Acima de absolutamente tudo */
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none; /* Permite clicar por trás se necessário, reativamos no card */
+    }
+
+    .toast {
+        background: rgba(18, 18, 22, 0.85);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-left: 4px solid #3b82f6; /* Detalhe azul lateral (muda por app se quiser) */
+        padding: 12px 16px;
+        border-radius: 14px;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        pointer-events: auto; /* Permite clique na notificação */
+        cursor: pointer;
+        
+        /* Animação de entrada suave */
+        animation: toastIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        transition: all 0.3s ease;
+    }
+
+    .toast.hide {
+        animation: toastOut 0.3s ease forwards;
+    }
+
+    .toast-icon {
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .toast-content {
+        flex: 1;
+    }
+
+    .toast-title {
+        font-size: 13px;
+        font-weight: bold;
+        color: #3b82f6;
+        margin: 0 0 2px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .toast-body {
+        font-size: 12px;
+        color: #d4d4d8;
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    @keyframes toastIn {
+        from { transform: translateY(-50px); opacity: 0; scale: 0.95; }
+        to { transform: translateY(0); opacity: 1; scale: 1; }
+    }
+
+    @keyframes toastOut {
+        from { transform: translateY(0) scale(1); opacity: 1; }
+        to { transform: translateY(-20px) scale(0.9); opacity: 0; }
+    }
+
 </style>
 
 </head>  
@@ -366,6 +443,8 @@
         <div class="nav-btn" onclick="toggleRecents(true)">🔳</div> 
     </div>  
 </div>  
+<div id="notification-container"></div>
+
 
 <script>  
     // Drivers
@@ -384,6 +463,43 @@
     var driver_failed = "off";  
     var driver_beta = "off";  
 
+    // --- FUNÇÃO DO SISTEMA: DISPARAR NOTIFICAÇÃO ---
+    function showNotification(title, message, icon = '🔔') {
+        const container = document.getElementById('notification-container');
+        
+        // Criando a estrutura do card de notificação
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        
+        toast.innerHTML = `
+            <div class="toast-icon">${icon}</div>
+            <div class="toast-content">
+                <p class="toast-title">${title}</p>
+                <p class="toast-body">${message}</p>
+            </div>
+        `;
+        
+        // Se clicar na notificação, ela some imediatamente
+        toast.onclick = () => {
+            removeToast(toast);
+        };
+        
+        // Insere no topo do container
+        container.appendChild(toast);
+        
+        // Remove automaticamente após 4 segundos
+        setTimeout(() => {
+            removeToast(toast);
+        }, 4000);
+    }
+
+    function removeToast(toast) {
+        if (!toast.classList.contains('hide')) {
+            toast.classList.add('hide');
+            // Espera a animação CSS terminar para apagar do HTML
+            setTimeout(() => { toast.remove(); }, 300);
+        }
+    }
     function checkDriver(name) { return window[name]; }  
 
     const ALL_APPS = [  
@@ -694,6 +810,25 @@
 
     function unlockSystem() {  
         document.getElementById('lock-screen').style.transform = 'translateY(-100%)';  
+setTimeout(() => {
+    showNotification('System', 'Todos os drivers foram carregados com sucesso!', '🛡️');
+}, 2000);
+
+setTimeout(() => {
+    showNotification('GhostNet', 'Conectando a Internet...', '🛜');
+}, 4000);
+
+setTimeout(() => {
+    showNotification('GhostNet', 'Conectado', '🛜');
+}, 8000);
+
+setTimeout(() => {
+    showNotification('GhostNet', 'Verificando disponibilidade de serviços...', '🛡️');
+}, 10000);
+
+setTimeout(() => {
+    showNotification('GhostNet', 'Serviços disponíveis.', '🛡️');
+}, 17000);
         setTimeout(() => {   
             document.getElementById('app-grid').classList.add('show');   
             document.getElementById('top-launcher').style.display = 'flex';  
@@ -877,6 +1012,8 @@
     function gamePanel() {  
         alert("Disponível em breve")
     }  
+
+
 </script>
 </body>  
 </html>
