@@ -1,0 +1,10 @@
+{
+  "version": "1.2.0",
+  "title": "WebOS Update",
+  "changes": [
+    "Novo sistema de notificações",
+    "Melhoria no kernel de apps",
+    "Correção de bugs no launcher"
+  ],
+  "tutorial_url": "https://seu-site.com/tutorial"
+}
