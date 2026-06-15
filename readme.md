@@ -1,5 +1,5 @@
-# Atualização 6.0.0
-"Oque tem de novo?"
+# Update 6.0.0 Acarajé 
+"What's new?"
 
 - Melhorias visuais
 - Adição de novas formas de senhas
@@ -9,6 +9,7 @@
 - remoção de funcionalidades antigas que atrapalhavam o Sistema
 - adição de novos aplicativos
 - Calendário interativo
+
 
 
 
@@ -33,19 +34,6 @@
 
 
  
-This project utilizes several other projects...Such as:
-
-erick weil (Portugol Executor)
-
-Brenda (pokedex interativa (https://github.com/Brenda-A-S/Pokedex-HTML-CSS-JS.git)
-
-onecompile (Lua Executor)
-
-FlipTalaga (Tetris game)
-
-lordofsunshine (Click game (You are a quality programmer. ) https://github.com/lordofsunshine/clicker-game-html.git)
-
-www.online-python.com (Python executor)
 
 # WebOS
 
