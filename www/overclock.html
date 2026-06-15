@@ -9,10 +9,21 @@
         * { box-sizing: border-box; }
         body, html {
             margin: 0; padding: 0; height: 100vh;
-            background: #000; color: #0f0;
+            background: #050505; color: #00ff66;
             font-family: 'Consolas', 'Courier New', monospace;
             overflow: hidden; user-select: none;
         }
+
+        /* EFEITO CRT GLOBAL */
+        body::before {
+            content: " "; display: block; position: fixed; inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 999; background-size: 100% 3px, 6px 100%; pointer-events: none;
+        }
+
+        /* GLOW GENERÁRICO */
+        .glow-text { text-shadow: 0 0 8px rgba(0, 255, 102, 0.6); }
+        .danger-text { color: #ff3333; text-shadow: 0 0 8px rgba(255, 51, 51, 0.6); }
 
         /* TELA 1: INTRO */
         #stage-intro {
@@ -21,85 +32,165 @@
             z-index: 100; background: #000;
         }
         .text-3d {
-            font-size: 50px; font-weight: bold; text-transform: uppercase;
-            text-align: center; letter-spacing: 5px; color: #0f0;
-            text-shadow: 0 1px 0 #0a0, 0 5px 0 #060, 0 0 5px rgba(0,255,0,0.5);
-            animation: formText 2s forwards; opacity: 0;
+            font-size: 45px; font-weight: bold; text-transform: uppercase;
+            text-align: center; letter-spacing: 6px; color: #00ff66;
+            text-shadow: 0 2px 0 #00aa44, 0 4px 0 #005522, 0 0 15px rgba(0,255,102,0.6);
+            animation: formText 1.5s cubic-bezier(0.15, 0.85, 0.35, 1) forwards; opacity: 0;
         }
         @keyframes formText {
-            from { opacity: 0; transform: scale(0.8); filter: blur(10px); }
+            from { opacity: 0; transform: scale(0.7); filter: blur(15px); }
             to { opacity: 1; transform: scale(1); filter: blur(0); }
         }
 
         .center-btn {
             margin-top: 50px; padding: 15px 40px;
-            background: #000; border: 2px solid #0f0; color: #0f0;
-            cursor: pointer; transition: 0.3s;
-            opacity: 0; animation: fadeIn 1s 1.5s forwards;
+            background: transparent; border: 2px solid #00ff66; color: #00ff66;
+            font-weight: bold; font-family: inherit; letter-spacing: 2px;
+            cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0,255,102,0.2);
+            opacity: 0; animation: fadeIn 1s 1s forwards;
         }
+        .center-btn:hover { background: #00ff66; color: #000; box-shadow: 0 0 20px #00ff66; }
         @keyframes fadeIn { to { opacity: 1; } }
 
-        /* TELA 2: MENU */
-        #stage-menu { display: none; padding: 30px; height: 100%; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
-        .ovr-btn {
-            width: 80%; max-width: 300px; padding: 20px;
-            background: #050505; border: 1px solid #1a1a1a;
-            color: #0f0; cursor: pointer; display: flex; justify-content: space-between;
+        /* HEADER PADRÃO PARA AS TELAS */
+        .sys-header {
+            width: 100%; padding: 15px; border-bottom: 1px solid #005522;
+            font-size: 11px; color: #00aa44; display: flex; justify-content: space-between;
         }
+
+        /* TELA 2: MENU */
+        #stage-menu { display: none; padding: 20px; height: 100%; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+        .ovr-btn {
+            width: 90%; max-width: 350px; padding: 18px;
+            background: #0a0a0a; border: 1px solid #005522;
+            color: #00ff66; cursor: pointer; display: flex; justify-content: space-between;
+            align-items: center; font-family: inherit; font-size: 14px; transition: all 0.2s;
+        }
+        .ovr-btn:hover:not(:disabled) { background: #00220a; border-color: #00ff66; box-shadow: 0 0 10px rgba(0,255,102,0.3); }
 
         /* TELA 3: SELEÇÃO */
         #stage-select { display: none; padding: 20px; height: 100%; flex-direction: column; }
-        .list-container { flex: 1; overflow-y: auto; border: 1px solid #1a1a1a; background: #050505; margin: 10px 0; }
-        .list-item { padding: 15px; border-bottom: 1px solid #1a1a1a; color: #aaa; }
-        .list-item.selected { background: #0f0; color: #000; }
+        .list-container { flex: 1; overflow-y: auto; border: 1px solid #003311; background: #050505; margin: 15px 0; }
+        .list-item { 
+            padding: 18px; border-bottom: 1px solid #00220a; color: #00aa44; 
+            cursor: pointer; display: flex; justify-content: space-between; transition: 0.1s;
+        }
+        .list-item.selected { background: #00ff66; color: #000; font-weight: bold; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
 
-        /* TELA 4: CÓDIGOS */
-        #stage-codes { display: none; position: fixed; inset: 0; padding: 20px; font-size: 11px; background: #000; overflow: hidden; }
+        /* TELA 4: TERMINAL DE COMPILAÇÃO / INJEÇÃO */
+        #stage-codes { display: none; position: fixed; inset: 0; padding: 15px; font-size: 11px; background: #020202; overflow: hidden; display: flex; flex-direction: column; }
+        #code-terminal { flex: 1; overflow-y: auto; color: #00ff66; white-space: pre-wrap; line-height: 1.5; }
+
+        /* TELA 5: PROGRESSO & LIVE MONITOR */
+        #stage-progress { display: none; position: fixed; inset: 0; flex-direction: column; padding: 20px; background: #000; }
+        .monitor-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-bottom: 15px;
+        }
+        .monitor-card {
+            background: #080808; border: 1px solid #003311; padding: 10px; font-size: 11px;
+        }
+        .prog-number { font-size: 70px; text-align: center; margin: 20px 0; font-weight: bold; transition: color 0.3s; }
+        .log-container { flex: 1; background: #020202; border: 1px solid #003311; padding: 10px; overflow-y: auto; font-size: 11px; font-family: inherit; }
         
-        /* TELA 5: PROGRESSO */
-        #stage-progress { display: none; position: fixed; inset: 0; flex-direction: column; align-items: center; justify-content: center; background: #000; }
-        .prog-number { font-size: 80px; text-shadow: 0 0 15px #0f0; }
-        .log-container { width: 90%; height: 70%; background: #050505; border: 1px solid #1a1a1a; padding: 10px; overflow-y: auto; font-size: 10px; }
-        .success { color: #0f0; } .error { color: #f00; }
+        /* BARRA DE PROGRESSO VISUAL */
+        .progress-bar-wire { width: 100%; height: 10px; border: 1px solid #00ff66; background: #000; margin-bottom: 15px; padding: 1px; }
+        .progress-bar-fill { height: 100%; background: #00ff66; width: 0%; transition: width 0.1s; }
     </style>
 </head>
 <body>
 
+    <!-- TELA 1: INTRO -->
     <div id="stage-intro">
-        <div class="text-3d">Ghost<br>Kernel</div>
-        <button class="center-btn" onclick="goToMenu()">Iniciar</button>
+        <div class="text-3d">GhostOS<br>Kernel Tuner</div>
+        <button class="center-btn" onclick="goToMenu()">INICIAR INTERFACE</button>
     </div>
 
+    <!-- TELA 2: MENU PRINCIPAL -->
     <div id="stage-menu">
-        <div style="font-size:12px;color:#555">SYS/KERNEL/OVR_MODE</div>
-        <button class="ovr-btn" onclick="goToSelect('RAM')">RAM UNLOCK <span>🔢</span></button>
-        <button class="ovr-btn" onclick="goToSelect('CPU')">CPU BOOST <span>⚡</span></button>
+        <div class="sys-header">
+            <span>SYS/KERNEL/OVERCLOCK_MANAGER</span>
+            <span id="menu-v">v1.2-STABLE</span>
+        </div>
+        <div style="text-align: center; margin-bottom: 20px;" class="glow-text">
+            <small style="color: #00aa44;">AVISO: A modificação de parâmetros de hardware pode gerar instabilidade virtual no WebOS.</small>
+        </div>
+        <button class="ovr-btn" onclick="goToSelect('RAM')">MEMORY SWAP UNLOCK <span>[ ZRAM ]</span></button>
+        <button class="ovr-btn" onclick="goToSelect('CPU')">CPU FREQ GOVERNOR <span>[ OVERCLOCK ]</span></button>
     </div>
 
+    <!-- TELA 3: SELEÇÃO DE PARÂMETROS -->
     <div id="stage-select">
-        <div id="select-title">Selecione o valor:</div>
+        <div class="sys-header">
+            <span id="select-context">GHOST_SYS // CONFIG_SELECTOR</span>
+            <a href="#" onclick="goToMenu()" style="color:#00ff66; text-decoration:none;">< Voltar</a>
+        </div>
+        <h3 id="select-title" class="glow-text" style="margin: 15px 0 5px 0;">Selecione o perfil desejado:</h3>
         <div class="list-container" id="list-container"></div>
-        <button id="confirm-selection" class="ovr-btn" style="width:100%; max-width:none" onclick="confirmOverclock()" disabled>Confirmar</button>
+        <button id="confirm-selection" class="ovr-btn" style="width:100%; max-width:none" onclick="confirmOverclock()" disabled>GRAVAR NO KERNEL (FLASHEAR)</button>
     </div>
 
-    <div id="stage-codes"><div id="code-terminal"></div></div>
+    <!-- TELA 4: TERMINAL DE INJEÇÃO (COMPILAÇÃO) -->
+    <div id="stage-codes">
+        <div class="sys-header" style="margin-bottom: 10px;">
+            <span>EXECUTING LIVE INJECTION: STAGE_01</span>
+            <span style="color: #ff3333; animation: fadeIn 0.5s infinite alternate;">● LIVE_LOG</span>
+        </div>
+        <div id="code-terminal"></div>
+    </div>
 
+    <!-- TELA 5: MONITOR EM TEMPO REAL E PROGRESSO FINAL -->
     <div id="stage-progress">
-        <div id="prog-title" style="margin-bottom:20px">Processando...</div>
-        <div class="prog-number" id="prog-number">10</div>
-        <div class="log-container" id="log-container" style="display:none"></div>
+        <div class="sys-header">
+            <span id="prog-title">GRAVANDO PARAMETROS NO COMPILADOR...</span>
+            <span id="prog-status" class="glow-text">PROCESSO ATIVO</span>
+        </div>
+
+        <!-- Telemetria Falsa Realista -->
+        <div class="monitor-grid" id="monitor-area">
+            <div class="monitor-card">
+                <div style="color:#00aa44">TARGET_FREQ:</div>
+                <div id="mon-freq" class="glow-text">--</div>
+            </div>
+            <div class="monitor-card">
+                <div style="color:#00aa44">CORE_VOLTAGE:</div>
+                <div id="mon-volt" class="glow-text">1.210 V</div>
+            </div>
+            <div class="monitor-card">
+                <div style="color:#00aa44">CORE_TEMP:</div>
+                <div id="mon-temp" class="glow-text">42°C</div>
+            </div>
+            <div class="monitor-card">
+                <div style="color:#00aa44">BUS_STATUS:</div>
+                <div id="mon-bus" style="color: #ffaa00">SYNCHRONIZING</div>
+            </div>
+        </div>
+
+        <div class="prog-number" id="prog-number">0%</div>
+        
+        <div class="progress-bar-wire">
+            <div class="progress-bar-fill" id="bar-fill"></div>
+        </div>
+
+        <div class="log-container" id="log-container"></div>
     </div>
 
     <script>
-        // FAIL-SAFE: Se não houver sys_config, usa valores padrão
-        let s = (typeof GHOST_SYS !== 'undefined') ? GHOST_SYS : { version: "1.0-TEST", specs: { ram: 8 } };
+        // Carrega configurações reais guardadas no sys_config ou cria mock realista
+        let s = (typeof GHOST_SYS !== 'undefined') ? GHOST_SYS : { version: "2.4-PREMIUM", specs: { ram: 8 } };
+        document.getElementById('menu-v').innerText = "v" + s.version;
+
         let currentType = '';
         let selectedValue = null;
 
         function setStage(id) {
             document.querySelectorAll('body > div').forEach(div => div.style.display = 'none');
             const target = document.getElementById(id);
-            target.style.display = (id.includes('intro') || id.includes('menu') || id.includes('progress')) ? 'flex' : 'block';
+            if(id === 'stage-intro' || id === 'stage-menu' || id === 'stage-progress') {
+                target.style.display = 'flex';
+            } else {
+                target.style.display = 'block';
+            }
         }
 
         function goToMenu() { setStage('stage-menu'); }
@@ -111,80 +202,181 @@
             container.innerHTML = '';
             document.getElementById('confirm-selection').disabled = true;
 
-            const options = (type === 'RAM') ? [4, 8, 16, 32] : [25, 50, 75, 100, 125];
-            options.forEach(opt => {
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                div.innerText = type === 'RAM' ? opt + " GB Virtual" : opt + "% Boost";
-                div.onclick = () => {
-                    document.querySelectorAll('.list-item').forEach(i => i.classList.remove('selected'));
-                    div.classList.add('selected');
-                    selectedValue = opt;
-                    document.getElementById('confirm-selection').disabled = false;
-                };
-                container.appendChild(div);
-            });
+            if (type === 'RAM') {
+                document.getElementById('select-title').innerText = "Alocação de Swap ZRAM (Atual: " + (s.specs.ram) + "GB):";
+                const options = [
+                    {val: 4, desc: "+4GB Virtual (Perfil Seguro)"},
+                    {val: 8, desc: "+8GB Virtual (Perfil Equilibrado)"},
+                    {val: 16, desc: "+16GB Virtual (Agressivo)"},
+                    {val: 32, desc: "+32GB LPDDR5X Hyperswap (Extreme X)"}
+                ];
+                options.forEach(opt => createRow(opt.desc, opt.val, container));
+            } else {
+                document.getElementById('select-title').innerText = "Frequência Base do Governador CPU:";
+                const options = [
+                    {val: 2.8, desc: "Stock Mode @ 2.80 GHz"},
+                    {val: 3.2, desc: "Performance Governor @ 3.20 GHz"},
+                    {val: 3.8, desc: "Gaming Turbo Overclock @ 3.82 GHz"},
+                    {val: 4.5, desc: "NITRO KERNEL MODE @ 4.50 GHz (⚠️ Riscos Térmicos)"}
+                ];
+                options.forEach(opt => createRow(opt.desc, opt.val, container));
+            }
+        }
+
+        function createRow(text, value, container) {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.innerHTML = `<span>${text}</span><span style="font-size:11px;">[Ready]</span>`;
+            div.onclick = () => {
+                document.querySelectorAll('.list-item').forEach(i => i.classList.remove('selected'));
+                div.classList.add('selected');
+                selectedValue = value;
+                document.getElementById('confirm-selection').disabled = false;
+            };
+            container.appendChild(div);
         }
 
         function confirmOverclock() {
-            if(currentType === 'RAM') startRamFlow();
-            else startCpuFlow();
+            startKernelCompileFlow();
         }
 
-        function startRamFlow() {
+        // FASE 1: Tela de compilação hacker cuspindo código rápido
+        function startKernelCompileFlow() {
             setStage('stage-codes');
             const term = document.getElementById('code-terminal');
-            let lines = 0;
-            const interval = setInterval(() => {
-                term.innerHTML += `> EXECUTING_MEM_PATCH_0x${Math.random().toString(16).slice(2,8)}... OK<br>`;
-                lines++;
-                if(lines > 15) {
-                    clearInterval(interval);
-                    runCounter();
-                }
-            }, 200);
-        }
-
-        function runCounter() {
-            setStage('stage-progress');
-            document.getElementById('prog-title').innerText = "Unlocking RAM...";
-            let count = 10;
-            const interval = setInterval(() => {
-                count++;
-                document.getElementById('prog-number').innerText = count;
-                if(count >= 100) {
-                    clearInterval(interval);
-                    finish();
-                }
-            }, 100);
-        }
-
-        function startCpuFlow() {
-            setStage('stage-progress');
-            document.getElementById('prog-number').style.display = 'none';
-            const log = document.getElementById('log-container');
-            log.style.display = 'block';
-            let step = 0;
-            const logs = ["Initializing...", "Core 0 OC...", "Voltage check...", "Syncing...", "Boost Applied!"];
+            term.innerHTML = '';
             
+            let lines = [
+                " [INFO] Initializing GhostOS Kernel Injector toolchain...",
+                " [INFO] Target architecture set to ARM64 / x86_64 Virtualized Base",
+                " [OK] Found target system_config payload table mapped.",
+                " [PROC] Unlocking superuser permissions via init.rc hijack...",
+                " [OK] Root shell environment acquired: UID=0(root) GID=0(root)",
+                " [PROC] Remounting /system and /vendor partitions as Read/Write...",
+                " [PATCH] Modifying kernel boot image table...",
+                " [DATA] Injecting custom variables into /proc/sys/kernel/sched_boost"
+            ];
+
+            // Gera mais linhas randômicas pra parecer compilação real de Android/Linux
+            for(let i=0; i<40; i++) {
+                let hex1 = Math.random().toString(16).slice(2,10).toUpperCase();
+                let hex2 = Math.random().toString(16).slice(2,6).toUpperCase();
+                lines.push(` [INJECT] Writing offset 0x${hex1} -> dynamic_patch_${hex2}.o (OK)`);
+            }
+            lines.push(" [SUCCESS] Compilation patch successfully built! Preparing memory interface...");
+            lines.push(" [EXEC] Moving to system stage-monitor pipeline...");
+
+            let currentLine = 0;
             const interval = setInterval(() => {
-                log.innerHTML += `<div class="success">> ${logs[step]}</div>`;
-                step++;
-                if(step >= logs.length) {
+                term.innerHTML += lines[currentLine] + "<br>";
+                term.scrollTop = term.scrollHeight;
+                currentLine++;
+                if(currentLine >= lines.length) {
                     clearInterval(interval);
-                    finish();
+                    setTimeout(startLiveProgressFlow, 600);
                 }
-            }, 800);
+            }, 45); // Veloz!
         }
 
-        function finish() {
-            document.getElementById('prog-title').innerText = "OVERCLOCK CONCLUÍDO!";
+        // FASE 2: Monitor Realista + Progresso de 0 a 100%
+        function startLiveProgressFlow() {
+            setStage('stage-progress');
+            
+            const pTitle = document.getElementById('prog-title');
+            const pNum = document.getElementById('prog-number');
+            const pFill = document.getElementById('bar-fill');
+            const log = document.getElementById('log-container');
+            
+            const monFreq = document.getElementById('mon-freq');
+            const monVolt = document.getElementById('mon-volt');
+            const monTemp = document.getElementById('mon-temp');
+            const monBus = document.getElementById('mon-bus');
+
+            log.innerHTML = '';
+            
+            if(currentType === 'RAM') {
+                pTitle.innerText = `ALOCANDO ${selectedValue}GB SWAP ZRAM...`;
+                monFreq.innerText = "N/A (RAM MODE)";
+            } else {
+                pTitle.innerText = `AJUSTANDO FREQUÊNCIA PARA ${selectedValue}GHz...`;
+                monFreq.innerText = `${selectedValue} GHz`;
+            }
+
+            let progress = 0;
+            
+            // Script de Logs detalhados em paralelo com a porcentagem
+            const microLogs = [
+                {p: 5, t: "[SYS] Parando governadores genéricos do Kernel... OK"},
+                {p: 15, t: "[SYS] Desativating thermal throttling engine daemon... SHUTDOWN"},
+                {p: 30, t: "[MEM] Re-mapeando buffers de alocação de heap virtual... DONE"},
+                {p: 45, t: "[VOLT] Incrementando barramento de energia de IO por segurança..."},
+                {p: 60, t: "[SYS] Aplicando novas tabelas de clock diretamente na CMOS fictícia..."},
+                {p: 75, t: "[SYNC] Sincronizando threads do sistema operacional..."},
+                {p: 90, t: "[OK] Verificando integridade dos arquivos modificados... 0 Erros"},
+                {p: 98, t: "[SUCCESS] Assinatura digital gerada com sucesso para o novo Kernel."}
+            ];
+
+            const interval = setInterval(() => {
+                progress += Math.floor(Math.random() * 3) + 1;
+                if(progress > 100) progress = 100;
+
+                // Atualiza números e barra
+                pNum.innerText = progress + "%";
+                pFill.style.width = progress + "%";
+
+                // Atualiza Telemetria randômica (Faz parecer vivo!)
+                if(currentType === 'CPU') {
+                    // Sobe a voltagem e temperatura com o progresso
+                    let currentVolt = (1.210 + (progress/300)).toFixed(3);
+                    let currentTemp = Math.floor(42 + (progress/1.8));
+                    monVolt.innerText = currentVolt + " V";
+                    monTemp.innerText = currentTemp + "°C";
+                    
+                    if(currentTemp > 75) {
+                        monTemp.className = "danger-text";
+                        monBus.innerText = "CRITICAL LIMIT";
+                        monBus.className = "danger-text";
+                    } else if(progress > 50) {
+                        monBus.innerText = "OVERCLOCK ACTIVE";
+                        monBus.style.color = "#ffaa00";
+                    }
+                } else {
+                    // Telemetria para RAM swap
+                    monVolt.innerText = "1.350 V";
+                    monTemp.innerText = Math.floor(38 + (progress/4)) + "°C";
+                    monBus.innerText = "WRITING EXT4";
+                    monBus.style.color = "#00ff66";
+                }
+
+                // Cospe logs com base na porcentagem atingida
+                if(microLogs.length > 0 && progress >= microLogs[0].p) {
+                    log.innerHTML += `<div style="color:#00ff66; margin-bottom:4px;">> ${microLogs[0].t}</div>`;
+                    log.scrollTop = log.scrollHeight;
+                    microLogs.shift();
+                }
+
+                if(progress >= 100) {
+                    clearInterval(interval);
+                    finishSequence();
+                }
+            }, 80);
+        }
+
+        function finishSequence() {
+            document.getElementById('prog-title').innerText = "PROCESSO CONCLUÍDO!";
+            document.getElementById('prog-status').innerText = "SUCCESS";
+            document.getElementById('prog-number').style.color = "#00ff66";
+            
             setTimeout(() => {
-                alert("Sistema reiniciado com novas specs!");
-                // Se estiver no WebOS, tenta voltar, senão apenas recarrega
-                if(window.parent && window.parent !== window) window.parent.postMessage('close_ovr', '*');
-                else location.reload();
-            }, 2000);
+                alert(`[GhostOS Kernel] Modificações salvas com sucesso! O perfil de ${selectedValue}${currentType === 'RAM' ? 'GB Virtual' : 'GHz'} foi fixado na inicialização.`);
+                
+                // Comunicação do seu WebOS
+                if(window.parent && window.parent !== window) {
+                    window.parent.postMessage('close_ovr', '*');
+                } else {
+                    location.reload();
+                }
+            }, 1500);
         }
     </script>
 </body>
