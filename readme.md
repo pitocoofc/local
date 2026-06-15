@@ -1,14 +1,14 @@
 # Update 6.0.0 Acarajé 
 "What's new?"
 
-- Melhorias visuais
-- Adição de novas formas de senhas
-- melhorias de tradução
-- melhorias na segurança do sistema
-- melhor otimização
-- remoção de funcionalidades antigas que atrapalhavam o Sistema
-- adição de novos aplicativos
-- Calendário interativo
+- Visual improvements
+- Addition of new password types
+- Translation improvements
+- System security improvements
+- Better optimization
+- Removal of outdated features that hindered the system
+- Addition of new applications
+- Interactive calendar
 
 
 
