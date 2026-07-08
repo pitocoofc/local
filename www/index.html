@@ -16,7 +16,7 @@
             overflow: hidden; user-select: none;
         }
 
-        /* OVERLAY DE SCANLINES (Efeito TV Velha) */
+        
         body::before {
             content: " ";
             position: fixed; inset: 0;
@@ -26,14 +26,14 @@
             z-index: 1000; pointer-events: none;
         }
 
-        /* HUD DE DADOS LATERAIS */
+        
         .hud {
             position: fixed; font-size: 10px; color: #444; text-transform: uppercase;
             padding: 10px; width: 100%; display: flex; justify-content: space-between;
         }
         .top { top: 0; } .bottom { bottom: 0; }
 
-        /* LOGO 3D COM GLITCH RGB */
+        
         .text-3d {
             font-size: 70px; font-weight: 900; text-transform: uppercase;
             text-align: center; letter-spacing: 10px; color: var(--main-red);
@@ -54,7 +54,7 @@
             50% { transform: scale(1.02); opacity: 0.8; }
         }
 
-        /* MENSAGEM POWERED BY */
+        
         #powered-container {
             height: 80px; display: flex; align-items: center; justify-content: center;
         }
@@ -71,7 +71,7 @@
             100% { transform: scale(1) translateX(0); opacity: 1; filter: blur(0); }
         }
 
-        /* LETRAS CAINDO COM RASTRO */
+        
         .letter {
             display: inline-block;
             transition: all 0.6s cubic-bezier(0.6, -0.28, 0.73, 0.05);
@@ -81,7 +81,7 @@
             opacity: 0; filter: blur(10px); color: var(--neon-blue) !important;
         }
 
-        /* EFEITO DE TREMOR DE TELA (HARD) */
+        
         .shake-hard { animation: hardShake 0.3s linear; }
         @keyframes hardShake {
             0% { transform: translate(0); }
@@ -96,8 +96,8 @@
 <body id="main-body">
 
     <div class="hud top">
-        <span>Kernel: GHOST_V3.sys</span>
-        <span>Status: Bypassing Security...</span>
+        <span>Kernel: GHOST_V6.sys</span>
+        <span>Status: Checking system....</span>
     </div>
 
     <div class="text-3d">Ghost<br>OS</div>
@@ -108,12 +108,12 @@
 
     <div class="hud bottom">
         <span id="hex-loader">0x000000</span>
-        <span>SkillForge.pp // Dev: Kelvyn</span>
+        <span>Checking BIOS // Developed by Ghost</span>
     </div>
 
     <script>
         if(localStorage.getItem('adv_graphics') === 'on') {
-    // Pula a animação pesada e vai direto pro OS
+                
     window.location.href = "login.html";
         }
         
@@ -121,7 +121,8 @@
         const body = document.getElementById('main-body');
         const hexDisplay = document.getElementById('hex-loader');
         
-        // Preparar Letras
+        
+        
         textElement.innerHTML = textElement.innerText.split('').map(char => 
             `<span class="letter">${char === ' ' ? '&nbsp;' : char}</span>`
         ).join('');
@@ -129,17 +130,18 @@
         const letters = document.querySelectorAll('.letter');
         const neonColors = ['#0ff', '#f0f', '#0f0', '#ff0', '#f00', '#fff'];
 
-        // Atualizador de HEX (Só visual no rodapé)
+        
         setInterval(() => {
             hexDisplay.innerText = "0x" + Math.random().toString(16).slice(2,8).toUpperCase();
         }, 100);
 
         function triggerSequence() {
-            // Impacto do texto chegando
+            
             body.classList.add('shake-hard');
             setTimeout(() => body.classList.remove('shake-hard'), 300);
 
-            // Sequência de queda
+            
+            
             setTimeout(() => {
                 letters.forEach((span, index) => {
                     setTimeout(() => {
@@ -148,7 +150,8 @@
                     }, index * 30);
                 });
 
-                // Reset do ciclo
+                
+                
                 setTimeout(() => {
                     letters.forEach(span => {
                         span.classList.remove('fall');
@@ -158,11 +161,12 @@
             }, 3000);
         }
 
-        // Início
+        
+        
         setTimeout(triggerSequence, 800);
         setInterval(triggerSequence, 7000);
 
-        // Redirecionamento 15s
+        
         setTimeout(() => {
             window.location.href = "inicio.html";
         }, 15000);
