@@ -135,7 +135,7 @@
         <p>The system had problems with the BIOS image. <span class="blink">SYSTEM HALTED.</span></p>
         
         <div class="error-code">
-            STATUS_CODE: BIOSKERNEL_44<br>
+            STATUS_CODE: GHOST_CRASH_0x00000044<br>
             REASON: ROM_SIGNATURE_MISSING_OR_INVALID<br>
             OFFSET: 0x0000F4A2
         </div>
@@ -181,7 +181,7 @@
                     for (let i = 0; i < totalRows; i++) {
                         if (i === targetRow) {
                             // Injeta o token cercado por binários para camuflar
-                            binaryMatrix += "01101011 01110011 thisisvalid 01101111 01110011\n";
+                            binaryMatrix += "01101011 01110011 1110?56 01101111 01110011\n";
                         } else {
                             // Gera uma linha normal de bits aleatórios espelhados em bytes
                             let row = "";
