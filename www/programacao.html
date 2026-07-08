@@ -15,7 +15,7 @@
             gap: 15px; 
         }
 
-        /* Botão gerado automaticamente */
+        
         .game-btn {
             background: #0a0a0a; border: 1px solid #222;
             padding: 15px; border-radius: 8px; cursor: pointer;
@@ -40,7 +40,7 @@
 </head>
 <body>
 
-    <div id="hub-title">SYS/GAMES/BIN_ROOT</div>
+    <div id="hub-title">SYS/CODESLANGUAGE/BIN_ROOT</div>
     <div class="grid" id="game-list">
         </div>
 
@@ -50,11 +50,10 @@
     </div>
 
     <script>
-        // HIERARQUIA AUTOMÁTICA: Basta adicionar o nome do arquivo aqui
-        // O sistema cuida do ícone e do botão sozinho.
+        
         const games = [
             "programacao/python.html",
-            "programacao/portugol.html", // Sim, você pode tratar como "jogo" se quiser testar
+            "programacao/portugol.html", 
             "programacao/lua.html"
         ];
 
@@ -62,14 +61,14 @@
 
         function initHub() {
             games.forEach(file => {
-                // Limpa o nome do arquivo para o botão (ex: ball_desviante.html -> BALL DESVIANTE)
+                
                 let cleanName = file.replace('.html', '').replace('_', ' ').toUpperCase();
                 
                 const btn = document.createElement('div');
                 btn.className = 'game-btn';
                 btn.onclick = () => launch(file);
                 
-                // Lógica de ícone genérico ou específico
+                
                 let icon = "🖥️";
                 if(file.includes("portugol")) icon = "🇵🇹";
                 if(file.includes("lua")) icon = "🌕";
