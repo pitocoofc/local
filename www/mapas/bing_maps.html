@@ -1,0 +1,58 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+ 
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden; 
+            background-color: #1a1a1a; 
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+
+        .credits-bar {
+            background: #222;
+            color: #0f0;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        iframe {
+            flex-grow: 1;
+            width: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header class="credits-bar">
+        <span>https://demo.webfuse.com/+iframetest/?url=https%3A%2F%2Fwww.bing.com%2Fmaps%3FFORM%3DLGCYVD%26cp%3D45.132733%257E-87.750893%26lvl%3D3.2%26style%3Dr
+</span>
+    </header>
+
+    <iframe 
+        src="https://demo.webfuse.com/+iframetest/?url=https%3A%2F%2Fwww.bing.com%2Fmaps%3FFORM%3DLGCYVD%26cp%3D45.132733%257E-87.750893%26lvl%3D3.2%26style%3Dr" 
+        title="Mapa"
+        loading="lazy">
+    </iframe>
+</div>
+
+</body>
+</html>
