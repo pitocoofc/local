@@ -531,29 +531,7 @@ color:#fff;
     var driver_failed = "off";  
     var driver_beta = "off";  
     
-import { HttpServer } from '@capacitor-community/http-server';
-import { Filesystem, Directory } from '@capacitor/filesystem';
 
-const iniciarServidorLocal = async () => {
-  // 1. Pega a pasta de documentos interna do aplicativo no Android
-  const pastaApp = await Filesystem.getUri({
-    directory: Directory.Documents,
-    path: '' // Raiz da pasta privada de documentos do app
-  });
-
-  try {
-    // 2. Inicia o servidor HTTP escutando no localhost
-    await HttpServer.start({
-      port: 8080,
-      path: pastaApp.uri, // Serve os arquivos contidos nessa pasta
-      localhostOnly: true // Garante que apenas o próprio celular acesse a porta
-    });
-    
-    console.log("Servidor rodando em http://localhost:8080");
-  } catch (erro) {
-    console.error("Erro ao iniciar:", erro);
-  }
-};
 
     // --- FUNÇÃO DO SISTEMA: DISPARAR NOTIFICAÇÃO ---
     function showNotification(title, message, icon = '🔔') {
