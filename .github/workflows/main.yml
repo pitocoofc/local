@@ -44,7 +44,8 @@ jobs:
           sed -i '/<application/i \    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />' $MANIFEST
           sed -i '/<application/i \    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />' $MANIFEST
           sed -i '/<application/i \    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />' $MANIFEST
-          
+          sed -i 's/<application/<application android:usesCleartextTraffic="true"/' $MANIFEST
+
           # 5. Sincroniza arquivos
           npx cap sync
           
